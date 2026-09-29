@@ -10,6 +10,12 @@ facts without a verdict, its choices depend on the facts much less. When the fac
 don't depend on them at all. An untrained Qwen3.5-0.8B control shows that Jeff's fine-tuning improves the first case,
 doesn't fix the move-only case, and makes one wording worse.
 
+A second experiment puts a generative model in front of Jeff. The model reads the full game state and writes what each
+move leads to, and Jeff chooses from those outcomes. With the untrained Qwen3.5-0.8B as that reasoner, the pair does no
+better than random. After a LoRA fine-tune of the reasoner, the pair matches code-written outcomes in Pac-Man and
+reaches 79% safe choices in Frogger. There, every miss traces back to the reasoner's mistakes. For the details, see
+[Two-stage decisions](#two-stage-decisions).
+
 ## Method
 
 `scripts/blind_options.py` drives each game with the rule bot, with 25% of its moves random so that risky states occur.
@@ -106,6 +112,89 @@ directory hold every state, choice, and probability.
 For decisions like these, compute each option's consequence in code and write it into the option, including whether
 it's good ("you lose a life"). This matches the README's advice to "reason in code, decide with Jeff."
 
+## Two-stage decisions
+
+This experiment replaces the code that writes each option's outcome with a generative model, the reasoner.
+
+### Method
+
+For each state, the reasoner (Qwen3.5-0.8B, generating text) gets the full state that the `judgement` wording uses: the
+board plus the facts for each direction. It also gets the legal moves. Its prompt (`jeff.games.reasoner.messages`)
+gives the game's rules, explains the fields for each direction, and asks for one line for each move in the form
+`<move>: <what the state shows> => <what happens>`. The code starts the reply with the first move's name. Decoding is
+greedy, with no thinking block. Jeff then chooses from options that pair each move's name with the outcome the reasoner
+wrote, along with the short state the `outcomes` wording uses. The `reasoned` condition in `scripts/blind_options.py`
+runs this pipeline on the same 400 states in each game as the other wordings.
+
+The experiment tests two reasoners:
+
+- **Untrained**: the released Qwen3.5-0.8B. I tried four prompt variants on development seed 5000, which isn't an
+  evaluation seed, and none beat chance on those states. With an example line that used a real move name, the model
+  copied the example onto that move. With no example, it wrote coordinates in place of outcomes. The final prompt uses
+  an example with a made-up move ("jump").
+- **Fine-tuned**: a LoRA adapter trained on the same prompts. The answers come from the game's own facts, in the
+  `outcomes` wording's phrases (`jeff.games.reasoner.target`). `scripts/reasoner_data.py` writes 4,000 training states
+  from seeds 100,000 and later and 200 validation states from seeds 200,000 and later, half from each game.
+  `scripts/reasoner_lora.py` trains rank-8 LoRA on the top 4 of 24 layers, for 1,000 steps of 2 rows at learning rate
+  1e-4. Training took about 60 minutes on the M1 Max, and validation loss fell from 1.43 to 0.008.
+
+The standard `mlx_lm.lora` command runs out of GPU memory on this model on a 32 GB Mac. In training mode, each Gated
+DeltaNet layer runs a Python loop over the tokens in place of its Metal kernel, and the trainer compiles each step. So
+`scripts/reasoner_lora.py` runs uncompiled steps, and keeps the Gated DeltaNet layers that come before the adapted ones
+on the kernel.
+
+### Results
+
+Jeff-0.8B chose in every row of these tables. The first rows repeat earlier results for comparison.
+
+| Frogger (289 contested states) | Safe choice | Fact sensitivity | Agrees with rule bot |
+|---|---|---|---|
+| Random moves | 67.5% | 0.00 | 21.4% |
+| Always "stay" | 80.6% | 0.00 | |
+| `outcomes` (code writes the outcomes) | 100.0% | +0.38 | 96.0% |
+| `situation` | 87.9% | +0.14 | 53.2% |
+| `judgement` | 59.9% | −0.05 | 46.2% |
+| Untrained reasoner, then Jeff | 66.8% | −0.01 | 43.0% |
+| Fine-tuned reasoner, then Jeff | 79.2% | +0.21 | 81.5% |
+
+| Pac-Man (188 contested states) | Safe choice | Fact sensitivity | Agrees with rule bot |
+|---|---|---|---|
+| Random moves | 56.6% | 0.00 | 40.7% |
+| Always "keep going" (legal in 136) | 89.7% | 0.00 | |
+| `outcomes` (code writes the outcomes) | 97.9% | +0.65 | 77.5% |
+| `situation` | 64.9% | +0.33 | 45.2% |
+| `judgement` | 67.0% | +0.02 | 46.8% |
+| Untrained reasoner, then Jeff | 46.3% | −0.06 | 34.2% |
+| Fine-tuned reasoner, then Jeff | 98.9% | +0.69 | 65.0% |
+
+Compared with `outcomes` on the same contested states, the untrained pair is 28 to 39 points less safe in Frogger and
+44 to 59 points less safe in Pac-Man (95% CIs). The fine-tuned pair is 16 to 25 points less safe in Frogger, and in
+Pac-Man the difference is between −1.5 and +3.6 points.
+
+### What the reasoners wrote
+
+- **Untrained, Frogger:** its verdicts are close to random. It says the frog loses a life for 56% of unsafe moves and
+  for 44% of safe moves, going by a keyword check of its text.
+- **Untrained, Pac-Man:** it copied the prompt's example outcome ("no ghost can reach Pac-Man soon, and he eats a
+  pellet right away") for 907 of the 941 moves it answered. It answered 92% of the legal moves. Jeff got nearly the same
+  text for every option.
+- **Fine-tuned, Pac-Man:** it wrote the exact correct outcome for all 1,024 moves.
+- **Fine-tuned, Frogger:** it wrote the exact correct outcome for 89.2% of moves, and the correct lose-a-life verdict for
+  93.7%. Its errors fall in the contested states. In the 171 contested states where every outcome was exact, Jeff chose
+  a safe move 100% of the time. In the 118 with at least one error, Jeff chose a safe move 49.2% of the time. The most
+  harmful error, in 34 moves, wrote "safe, and one row closer to the goal" where a car will be. The most common error,
+  in 55 moves, wrote "fall in the water" in place of "hit by a car," which is wrong but still says a life is lost.
+
+### Findings
+
+- **Jeff chooses correctly from correct outcomes, whoever writes them.** When the reasoner's outcomes were all
+  correct, Jeff's choices were as safe as with the code-written outcomes in both games.
+- **The pipeline is only as good as the reasoner.** The untrained 0.8B reasoner can't turn the state's facts into
+  outcomes, so the pair does no better than random. The fine-tuned reasoner learns the Pac-Man mapping fully and the
+  Frogger mapping mostly, and the pair's safety follows its accuracy.
+- **Generation costs time.** The reasoner adds about 1.5 seconds for each decision on the M1 Max, against about 0.1
+  seconds for Jeff alone.
+
 ## Limits
 
 - **Coverage:** the experiment tests one phrasing for each wording, only the 0.8B model, and one state distribution.
@@ -115,6 +204,14 @@ it's good ("you lose a life"). This matches the README's advice to "reason in co
   moves" column in the JSON files, not the choices or the measures in these tables.
 - **Scope:** the experiment tests choices between actions whose consequences decide the outcome. It doesn't measure
   ordinary text classification, where the evidence is in the text and the options are labels.
+- **What the fine-tuned reasoner learned:** its training answers use the `outcomes` wording's phrases, so a reasoner
+  without errors reproduces the `outcomes` condition. Its input state already holds the facts for each direction, so the task
+  is a lookup in Frogger and a distance threshold in Pac-Man. The experiment doesn't test a reasoner that works out
+  outcomes from the board alone.
+- **Overlap in Pac-Man:** Pac-Man has one maze, so evaluation states can repeat positions seen in training, with
+  different ghosts and pellets. Frogger's lanes differ for each seed.
+- **Reasoner capacity:** memory limits kept the LoRA adapter to the top 4 layers. More layers or more training might
+  improve the Frogger reasoner.
 
 ## Reproduce the results
 
@@ -145,4 +242,29 @@ it's good ("you lose a life"). This matches the README's advice to "reason in co
    uv run python scripts/blind_options.py http://127.0.0.1:8765 --out runs/blind/jeff-0.8b.json --states 400
    ```
 
-MLX inference was deterministic in these runs: a repeated Jeff run reproduced every choice.
+1. For the two-stage runs, link the base model that the control step downloaded, and run the untrained reasoner
+   against the Jeff server:
+
+   ```bash
+   ln -s "$PWD/.cache/huggingface/hub/models--Qwen--Qwen3.5-0.8B/snapshots/2fc06364715b967f1860aea9cf38778875588b17" \
+     checkpoints/base-0.8b
+   uv run python scripts/blind_options.py http://127.0.0.1:8765 --out runs/blind/reasoned-untrained.json --states 400 \
+     --conditions reasoned --reasoner checkpoints/base-0.8b
+   ```
+
+1. Build the fine-tuning data and train the adapter. Stop the Jeff server first, to leave the GPU memory for training:
+
+   ```bash
+   uv run python scripts/reasoner_data.py --out data/reasoner
+   uv run python scripts/reasoner_lora.py --data data/reasoner --out checkpoints/reasoner-lora
+   ```
+
+1. Restart the Jeff server and run the fine-tuned reasoner:
+
+   ```bash
+   uv run python scripts/blind_options.py http://127.0.0.1:8765 --out runs/blind/reasoned-finetuned.json --states 400 \
+     --conditions reasoned --reasoner checkpoints/base-0.8b --adapter checkpoints/reasoner-lora
+   ```
+
+MLX inference was deterministic in these runs: a repeated Jeff run reproduced every choice. The `reasoned-*.json` files
+in this directory hold each state's reasoner text under `reasoning`.
