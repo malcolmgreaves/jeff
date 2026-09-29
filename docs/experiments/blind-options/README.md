@@ -20,6 +20,11 @@ A third experiment gives the fine-tuned reasoner only the board, so it has to wo
 many hazards, and the pair reaches 73% safe choices in Frogger and 62% in Pac-Man. For the details, see
 [Board-only reasoner](#board-only-reasoner).
 
+A fourth experiment trains the facts reasoner to convergence, then fine-tunes Jeff on options the reasoner writes, with
+every outcome checked and every label taken from the game. The converged reasoner alone raises Frogger to 96.5% safe
+choices. Retraining Jeff doesn't change safety, but it changes which safe move Jeff picks. For the details, see
+[Jeff trained on the reasoner's outcomes](#jeff-trained-on-the-reasoners-outcomes).
+
 ## Method
 
 `scripts/blind_options.py` drives each game with the rule bot, with 25% of its moves random so that risky states occur.
@@ -278,6 +283,93 @@ On the evaluation states:
 - **Jeff's accuracy is set by the reasoner's.** As in the two-stage experiment, Jeff chooses correctly whenever the
   verdicts it reads are right.
 
+## Jeff trained on the reasoner's outcomes
+
+This experiment fine-tunes Jeff on options written by the fine-tuned reasoner, so that Jeff learns the reasoner's own
+outcome language. First, the reasoner trains to convergence.
+
+### Method
+
+1. **Train the reasoner to convergence.** `scripts/reasoner_lora.py --resume` continued the two-stage experiment's
+   reasoner (1,000 steps) on the same data. It scored the full validation set every 200 steps and stopped after two
+   scores without a lower loss. It stopped at step 800 and kept step 400, where validation loss was 0.0006, against
+   0.0077 at the start.
+2. **Build Jeff's training data.** `scripts/reasoned_jeff_data.py` runs the converged reasoner on new states, on seeds
+   no other run uses (training from 300,000, development from 400,000, and calibration from 500,000). Code checks every
+   outcome the reasoner writes against the game's own. If any outcome in a state is wrong, the reasoner writes again
+   with sampling (temperature 0.7), up to four answers in all. A state it never gets right is dropped. The label is
+   always the rule bot's move, never the reasoner's, and the checks never change a label. Each row asks the question
+   the `reasoned` condition asks: the move's name and the reasoner's outcome for each option, with the short state.
+
+   | Split | Rows | Frogger states: right on first answer / after a retry / dropped | Pac-Man states: right on first answer |
+   |---|---|---|---|
+   | Training | 2,000 | 982 / 18 / 39 | 1,000 of 1,000 |
+   | Development | 200 | 98 / 2 / 7 | 100 of 100 |
+   | Calibration | 200 | 99 / 1 / 3 | 100 of 100 |
+
+3. **Fine-tune Jeff.** The repository's trainer, `jeff.train`, calls CUDA directly, so `scripts/jeff_lora.py` trains
+   Jeff-0.8B with MLX instead. It puts LoRA on the top 4 layers and keeps the answer readout frozen. It uses the
+   cross-entropy loss that `jeff.train` uses, shuffles the options at every step, and sums gradients over 8 rows for
+   each update. It trained for one epoch (250 updates) at learning rate 1e-4, which took 15 minutes. The run scores the
+   development set every 25 updates and keeps the update with the lowest loss. It kept update 250: development loss
+   0.313 against 0.717 before training, and accuracy against the rule bot's moves 84.5% against 78.0%. The fitted
+   temperature is 0.90. The server loads the adapter with `JEFF_ADAPTER`.
+4. **Evaluate.** The converged reasoner runs with the original Jeff and with the retrained Jeff, on the same 400 states
+   in each game. The retrained Jeff also runs every earlier wording. Decoding is greedy, so both Jeffs read identical
+   reasoner text in all 800 states.
+
+### Results
+
+| Frogger (289 contested states) | Safe choice | Fact sensitivity | Agrees with rule bot | Probability on safe moves |
+|---|---|---|---|---|
+| `outcomes`, original Jeff | 100.0% | +0.38 | 96.0% | 88.4% |
+| Reasoner at 1,000 steps, original Jeff | 79.2% | +0.21 | 81.5% | 79.8% |
+| Converged reasoner, original Jeff | 96.5% | +0.36 | 92.0% | 86.5% |
+| Converged reasoner, retrained Jeff | 96.5% | +0.36 | 90.0% | 96.4% |
+
+| Pac-Man (188 contested states) | Safe choice | Fact sensitivity | Agrees with rule bot | Probability on safe moves |
+|---|---|---|---|---|
+| `outcomes`, original Jeff | 97.9% | +0.65 | 77.5% | 87.4% |
+| Reasoner at 1,000 steps, original Jeff | 98.9% | +0.69 | 65.0% | 87.5% |
+| Converged reasoner, original Jeff | 98.9% | +0.69 | 65.0% | 87.5% |
+| Converged reasoner, retrained Jeff | 100.0% | +0.67 | 79.5% | 98.3% |
+
+On identical reasoner text, the retrained Jeff chose differently from the original Jeff in 18 Frogger states and 133
+Pac-Man states. The paired differences, retrained minus original, with 95% CIs:
+
+| | Safe choice | Agrees with rule bot |
+|---|---|---|
+| Frogger | 0.0 (0.0 to 0.0) | −2.0 (−4.0 to 0.0) |
+| Pac-Man | +1.1 (−0.4 to +2.5) | +14.5 (+9.7 to +19.3) |
+
+The retrained Jeff on the earlier wordings, against the original Jeff (safe choice, then fact sensitivity):
+
+| Wording | Frogger, original | Frogger, retrained | Pac-Man, original | Pac-Man, retrained |
+|---|---|---|---|---|
+| `outcomes` | 100.0%, +0.38 | 100.0%, +0.39 | 97.9%, +0.65 | 97.9%, +0.66 |
+| `situation` | 87.9%, +0.14 | 92.7%, +0.24 | 64.9%, +0.33 | 69.7%, +0.39 |
+| `listed` | 80.6%, 0.00 | 80.6%, 0.00 | 16.0%, −0.60 | 11.2%, −0.33 |
+| `judgement` | 59.9%, −0.05 | 79.2%, −0.00 | 67.0%, +0.02 | 68.6%, +0.04 |
+| `board` | 58.8%, −0.02 | 77.9%, −0.01 | 45.7%, −0.08 | 55.9%, +0.02 |
+| `rule` | 51.6%, −0.03 | 39.8%, +0.04 | 73.9%, +0.19 | 69.7%, +0.06 |
+
+### Findings
+
+- **Training the reasoner to convergence mattered most.** With the original Jeff, the converged reasoner raised
+  Frogger's safe choices from 79.2% to 96.5%. It writes the exact correct outcome for 98.3% of Frogger moves (up from
+  89.2%) and for all Pac-Man moves. Jeff chose a safe move in all 259 contested Frogger states where every outcome was
+  right, and in 20 of the 30 states with an error.
+- **Retraining Jeff didn't change safety.** Jeff already chose safely whenever the reasoner's outcomes were right, so
+  the remaining Frogger misses come from the reasoner's errors, which a Jeff trained on correct outcomes can't catch.
+  The Pac-Man gain, 2 states in 188, isn't statistically clear.
+- **Retraining Jeff changed which safe move it picks.** Its labels are the rule bot's moves, and in Pac-Man it agrees
+  with the rule bot 14.5 points more often. In Frogger, agreement dipped by 2 points.
+- **The retrained Jeff is more confident.** Its probability on safe moves rose from 86.5% to 96.4% in Frogger and from
+  87.5% to 98.3% in Pac-Man. Part of that comes from its lower fitted temperature (0.90 against 0.96).
+- **The fine-tune changed Jeff on other wordings too.** `situation` improved in both games. `judgement` and `board`
+  became safer in Frogger with no gain in fact sensitivity, so Jeff changed its fixed habit rather than reading the
+  facts. `rule` became less safe in Frogger.
+
 ## Limits
 
 - **Coverage:** the experiment tests one phrasing for each wording, only the 0.8B model, and one state distribution.
@@ -295,6 +387,10 @@ On the evaluation states:
   that move every 2 turns, the outcome can't be worked out from that state.
 - **Board-only training length:** validation loss was still falling slowly at step 1,500, and the kept adapter wasn't
   the one with the lowest validation loss.
+- **Jeff's fine-tune:** it trains LoRA on the top 4 layers, not all weights as `jeff.train` does, and only on game
+  data. Development loss was still falling after its one epoch. The experiment doesn't measure whether the fine-tune
+  changed Jeff on the benchmark panel. Its labels, the rule bot's moves, decide which of several safe moves counts as
+  correct.
 - **Overlap in Pac-Man:** Pac-Man has one maze, so evaluation states can repeat positions seen in training, with
   different ghosts and pellets. Frogger's lanes differ for each seed.
 - **Reasoner capacity:** memory limits kept the LoRA adapter to the top 4 layers. More layers or more training might
@@ -363,5 +459,31 @@ On the evaluation states:
      --conditions reasoned-board --reasoner checkpoints/base-0.8b --adapter checkpoints/reasoner-board-lora
    ```
 
+1. For Jeff trained on the reasoner's outcomes, train the reasoner to convergence, build Jeff's data, and fine-tune
+   Jeff. Stop the Jeff server during the two training steps:
+
+   ```bash
+   uv run python scripts/reasoner_lora.py --data data/reasoner --out checkpoints/reasoner-lora-converged \
+     --resume checkpoints/reasoner-lora --iters 2000 --eval-every 200 --valid-batches -1 --patience 2
+   uv run python scripts/reasoned_jeff_data.py --reasoner checkpoints/base-0.8b \
+     --adapter checkpoints/reasoner-lora-converged --out data/reasoned-jeff
+   uv run python scripts/jeff_lora.py --checkpoint checkpoints/jeff-0.8b --data data/reasoned-jeff \
+     --out checkpoints/jeff-reasoned-lora
+   ```
+
+1. Run the converged reasoner against the original Jeff server. Then restart the server with the adapter and run it
+   again, with every wording:
+
+   ```bash
+   uv run python scripts/blind_options.py http://127.0.0.1:8765 --out runs/blind/reasoned-converged.json --states 400 \
+     --conditions reasoned --reasoner checkpoints/base-0.8b --adapter checkpoints/reasoner-lora-converged
+   JEFF_BACKEND=mlx JEFF_CHECKPOINT=checkpoints/jeff-0.8b JEFF_ADAPTER=checkpoints/jeff-reasoned-lora PORT=8765 \
+     uv run jeff-serve
+   uv run python scripts/blind_options.py http://127.0.0.1:8765 --out runs/blind/reasoned-converged-jeff-tuned.json \
+     --states 400 --conditions outcomes situation listed judgement board rule reasoned \
+     --reasoner checkpoints/base-0.8b --adapter checkpoints/reasoner-lora-converged
+   ```
+
 MLX inference was deterministic in these runs: a repeated Jeff run reproduced every choice. The `reasoned-*.json` files
-in this directory hold each state's reasoner text under `reasoning`.
+in this directory hold each state's reasoner text under `reasoning`. `reasoned-jeff-data-report.json` records the data
+build's counts and checksums.

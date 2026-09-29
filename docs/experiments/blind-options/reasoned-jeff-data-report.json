@@ -1,0 +1,59 @@
+{
+  "reasoner": "checkpoints/base-0.8b",
+  "adapter": "checkpoints/reasoner-lora-converged",
+  "tries": 4,
+  "sample_temperature": 0.7,
+  "seeds": {
+    "train": 300000,
+    "dev": 400000,
+    "calibration": 500000
+  },
+  "train": {
+    "rows": 2000,
+    "sha256": "daedb7c9f82e66ed2457e3ec476b6a281a536cf45e15a94451e58f379a73963e",
+    "states": {
+      "frogger": {
+        "states": 1039,
+        "kept on the first answer": 982,
+        "dropped": 39,
+        "kept after a retry": 18
+      },
+      "pacman": {
+        "states": 1000,
+        "kept on the first answer": 1000
+      }
+    }
+  },
+  "dev": {
+    "rows": 200,
+    "sha256": "e20676620e19c14e846a7327ee30f8d8c4b7d80d03e3e24aada5d67491196077",
+    "states": {
+      "frogger": {
+        "states": 107,
+        "kept on the first answer": 98,
+        "kept after a retry": 2,
+        "dropped": 7
+      },
+      "pacman": {
+        "states": 100,
+        "kept on the first answer": 100
+      }
+    }
+  },
+  "calibration": {
+    "rows": 200,
+    "sha256": "f3de2360414c1bdd8e719e4304a6643e02f60bc6fdc076bf5d289f563604e630",
+    "states": {
+      "frogger": {
+        "states": 103,
+        "kept on the first answer": 99,
+        "dropped": 3,
+        "kept after a retry": 1
+      },
+      "pacman": {
+        "states": 100,
+        "kept on the first answer": 100
+      }
+    }
+  }
+}

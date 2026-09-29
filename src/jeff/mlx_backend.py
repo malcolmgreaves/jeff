@@ -18,7 +18,7 @@ from jeff.types import DecisionInput
 class MlxDecisionModel:
     backend = "mlx"
 
-    def __init__(self, checkpoint: str | Path) -> None:
+    def __init__(self, checkpoint: str | Path, adapter: str | Path | None = None) -> None:
         import mlx.core as mx
         from mlx_lm.models.qwen3_5 import Model, ModelArgs
         from transformers import AutoProcessor
@@ -53,8 +53,27 @@ class MlxDecisionModel:
         self.readout = mx.load(str(directory / "readout.safetensors"))["weight"].astype(mx.float32)
         if self.readout.shape[0] != MAX_OPTIONS:
             raise ValueError(f"Readout has {self.readout.shape[0]} rows, expected {MAX_OPTIONS}")
+        self.adapter = None
+        if adapter is not None:
+            self.load_adapter(Path(adapter))
         mx.eval(self.model.parameters(), self.readout)
         self.processor = AutoProcessor.from_pretrained(str(directory))
+
+    def load_adapter(self, directory: Path) -> None:
+        """A LoRA adapter trained on this checkpoint with MLX (scripts/jeff_lora.py): LoRA weights for the top layers,
+        plus the adapter's own readout and fitted temperature, which replace the checkpoint's."""
+        mx = self.mx
+        from mlx_lm.tuner.utils import linear_to_lora_layers
+
+        config = json.loads((directory / "adapter_config.json").read_text())
+        linear_to_lora_layers(self.model, config["num_layers"], config["lora_parameters"])
+        self.model.load_weights(str(directory / "adapters.safetensors"), strict=False)
+        self.model.eval()  # the new LoRA layers start in training mode
+        self.readout = mx.load(str(directory / "readout.safetensors"))["weight"].astype(mx.float32)
+        self.temperature = float(config["temperature"])
+        if not math.isfinite(self.temperature) or self.temperature <= 0:
+            raise ValueError("Adapter temperature must be positive and finite.")
+        self.adapter = str(directory)
 
     def prompt_ids(self, row: DecisionInput) -> list[int]:
         if row.get("images"):

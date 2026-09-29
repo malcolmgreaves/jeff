@@ -124,7 +124,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     backend = os.getenv("JEFF_BACKEND", "pytorch")
     if backend == "mlx":  # Apple GPUs: fast Metal kernels for Qwen3.5 (text only)
         from jeff.mlx_backend import MlxDecisionModel
-        service.model = await run_in_threadpool(MlxDecisionModel, service.checkpoint)
+        # JEFF_ADAPTER: an MLX LoRA adapter trained on the checkpoint (scripts/jeff_lora.py)
+        service.model = await run_in_threadpool(MlxDecisionModel, service.checkpoint, os.getenv("JEFF_ADAPTER"))
     elif backend == "pytorch":
         service.model = await run_in_threadpool(load_decision_model, checkpoint=service.checkpoint, device=device_from_environment())
     else:
@@ -166,7 +167,8 @@ def playground() -> str:
 @app.get("/health", response_model=None)
 def health() -> dict[str, JSONValue]:
     return {"status": "ready" if service.model is not None else "loading", "model": service.name,
-            "checkpoint": service.checkpoint, "authentication": bool(os.getenv("JEFF_API_KEY")),
+            "checkpoint": service.checkpoint, "adapter": getattr(service.model, "adapter", None),
+            "authentication": bool(os.getenv("JEFF_API_KEY")),
             "modalities": ["text"] if getattr(service.model, "backend", None) == "mlx" else ["text", "image"]}
 
 
