@@ -3,9 +3,10 @@ lines a correct reasoner writes, built from the game's own facts in the outcomes
 
 States come from the same driver as scripts/blind_options.py (the rule bot with a share of random moves), on seeds
 disjoint from its evaluation seeds (1234 on): train from TRAIN_SEED on, valid from VALID_SEED on. The files are in
-mlx-lm's chat format, for `mlx_lm.lora --data DIR --mask-prompt`.
+mlx-lm's chat format, for `mlx_lm.lora --data DIR --mask-prompt`. With `--input board`, the reasoner sees only the board
+and the answers write out how each outcome follows from it (jeff.games.reasoner.board_target).
 
-Usage: python scripts/reasoner_data.py --out data/reasoner [--train 2000] [--valid 100]"""
+Usage: python scripts/reasoner_data.py --out data/reasoner [--input facts|board] [--train 2000] [--valid 100]"""
 
 import argparse
 import json
@@ -23,7 +24,7 @@ def observe(game, module, version: str) -> tuple[dict, dict]:
     return game.observe()
 
 
-def rows(name: str, count: int, seed: int) -> list[dict]:
+def rows(name: str, count: int, seed: int, board: bool = False) -> list[dict]:
     module = frogger if name == "frogger" else pacman
     game = (frogger.Frogger if module is frogger else pacman.PacMan)("rule")
     result: list[dict] = []
@@ -35,8 +36,11 @@ def rows(name: str, count: int, seed: int) -> list[dict]:
             if game.done or len(result) == count:
                 break
             state, question = observe(game, module, "judgement")
-            result.append({"messages": [*reasoner.messages(name, state, question),
-                                        {"role": "assistant", "content": reasoner.target(name, state, question)}]})
+            if board:
+                chat, answer = reasoner.board_messages(name, reasoner.board_only(game, state), question), reasoner.board_target(game, question)
+            else:
+                chat, answer = reasoner.messages(name, state, question), reasoner.target(name, state, question)
+            result.append({"messages": [*chat, {"role": "assistant", "content": answer}]})
             rule_state, rule_question = observe(game, module, "rule")
             move = module.rule_player(rule_state, rule_question)
             game.step(move if driver.random() >= EPSILON else driver.choice(sorted(rule_question["criteria"])))
@@ -47,12 +51,13 @@ def rows(name: str, count: int, seed: int) -> list[dict]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--input", choices=("facts", "board"), default="facts", help="What the reasoner sees")
     parser.add_argument("--train", type=int, default=2000, help="States per game")
     parser.add_argument("--valid", type=int, default=100, help="States per game")
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     for split, count, seed in (("train", args.train, TRAIN_SEED), ("valid", args.valid, VALID_SEED)):
-        data = [row for name in ("frogger", "pacman") for row in rows(name, count, seed)]
+        data = [row for name in ("frogger", "pacman") for row in rows(name, count, seed, args.input == "board")]
         random.Random(f"{seed}-shuffle").shuffle(data)
         path = args.out / f"{split}.jsonl"
         if path.exists():

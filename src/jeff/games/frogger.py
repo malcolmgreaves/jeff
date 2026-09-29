@@ -297,7 +297,13 @@ class Frogger:
     def safe(self, what: str) -> bool:
         return what in ("empty road", "log", "safe ground", "goal")
 
-    def board(self) -> list[str]:
+    def moves_now(self, row: int) -> bool:
+        """Whether this row's cars or logs move at the end of this turn."""
+        return (self.turn + 1) % self.lanes[row].period == 0
+
+    def board(self, timing: bool = False) -> list[str]:
+        """The board as text, top row first. With `timing`, each road and river row also says whether it moves at the end
+        of this turn, which a row that moves every 2 turns does not show otherwise."""
         lines = []
         for row in range(GOAL, -1, -1):
             if row in self.lanes:
@@ -305,6 +311,8 @@ class Frogger:
                 mark = "C" if row in ROAD else "L"
                 squares = "".join(mark if cell else ("." if row in ROAD else "~") for cell in lane.cells)
                 where = f"{self.kind(row)}, moving {'right' if lane.direction == 1 else 'left'} every {'turn' if lane.period == 1 else '2 turns'}"
+                if timing:
+                    where += ", moves at the end of this turn" if self.moves_now(row) else ", does not move this turn"
             else:
                 squares, where = "_" * WIDTH, self.kind(row)
             if row == self.row:

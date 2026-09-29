@@ -10,7 +10,9 @@ random moves, so risky states come up), and each answer is scored against the ga
 - board: as judgement, with those fields removed, so the facts must be worked out from the board itself;
 - rule: each option says when it is the right move, in terms of the fields of the state (as the Doom harness does for Jev);
 - reasoned (only with --conditions and --reasoner): a generative model reads the judgement wording's full state and
-  writes what each move leads to (jeff.games.reasoner); each option is the move's name and that outcome.
+  writes what each move leads to (jeff.games.reasoner); each option is the move's name and that outcome;
+- reasoned-board: as reasoned, but the reasoner sees only the board (jeff.games.reasoner.board_only) and writes out
+  how it works each outcome out.
 
 A state is contested when some legal moves are safe and some are not: only there does the choice decide whether a life
 is lost this turn. Frogger: safe = the square is free once cars and logs have moved. Pac-Man: safe = no ghost within
@@ -24,7 +26,7 @@ each wording's fact sensitivity: how much more often it picks an option when tha
 (0 for a player that always picks the same option key).
 
 Usage: python scripts/blind_options.py URL --out runs/blind/NAME.json [--states 400] [--games frogger pacman]
-       [--conditions outcomes reasoned --reasoner MODEL_DIR [--adapter ADAPTER_DIR]]"""
+       [--conditions outcomes reasoned|reasoned-board --reasoner MODEL_DIR [--adapter ADAPTER_DIR]]"""
 
 import argparse
 import json
@@ -37,7 +39,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from jeff.games import common, frogger, pacman
-from jeff.games.reasoner import FACTS as FROGGER_FACTS, Reasoner
+from jeff.games.reasoner import FACTS as FROGGER_FACTS, Reasoner, board_only
 
 CONDITIONS = ("outcomes", "situation", "listed", "judgement", "board", "rule")
 EPSILON = 0.25  # share of the driver's moves that are random
@@ -65,11 +67,12 @@ def view(game, module, condition: str) -> tuple[dict, dict, dict[str, str]]:
 
 
 def reasoned(name: str, game, module, reasoner: Reasoner) -> tuple[dict, dict, dict[str, str], dict]:
-    """The reasoned condition: a reasoner reads the judgement wording's full state and writes what each move leads to;
-    Jeff gets those outcomes as the options, with the outcomes wording's short state. Also returns the reasoner's text."""
+    """The reasoned conditions: a reasoner reads the judgement wording's full state (or in board mode only its board)
+    and writes what each move leads to; Jeff gets those outcomes as the options, with the outcomes wording's short
+    state. Also returns the reasoner's text."""
     state, _, _ = view(game, module, "outcomes")
     full, question, moves = view(game, module, "judgement")
-    options, text, parsed = reasoner.options(name, full, question)
+    options, text, parsed = reasoner.options(name, board_only(game, full) if reasoner.board else full, question)
     return state, {**question, "criteria": options}, moves, {"reasoning": text, "parsed": parsed}
 
 
@@ -101,7 +104,7 @@ def play(name: str, client: common.JeffClient, count: int, seed: int, steps: int
             answers = {}
             for condition in conditions:
                 extra: dict = {}
-                if condition == "reasoned":
+                if condition.startswith("reasoned"):
                     state, question, moves, extra = reasoned(name, game, module, reasoner)  # type: ignore[arg-type]
                 else:
                     state, question, moves = view(game, module, condition)
@@ -180,7 +183,7 @@ def summarise(records: list[dict]) -> dict:
             "probability_on_safe": statistics.fmean(sum(p for move, p in r["answers"][c]["probabilities"].items() if r["safe"][move])
                                                     for r in contested),
             "agrees_with_rule_bot": statistics.fmean(agree[c]), "agrees_ci95": wilson(sum(agree[c]), len(records))}
-        if c == "reasoned":  # the share of legal moves the reasoner wrote an outcome for
+        if c.startswith("reasoned"):  # the share of legal moves the reasoner wrote an outcome for
             result["conditions"][c]["moves_with_outcome"] = (sum(r["answers"][c]["parsed"] for r in records)
                                                              / sum(len(r["safe"]) for r in records))
     return result
@@ -198,8 +201,9 @@ def table(name: str, summary: dict) -> str:
         low, high = s["safe_choice_ci95"]
         lines.append(f"| {c} | {s['safe_choice']:.1%} | {low:.1%}-{high:.1%} | {s['fact_sensitivity']:+.2f} | "
                      f"{s['probability_on_safe']:.1%} | {s['agrees_with_rule_bot']:.1%} |")
-    if "reasoned" in summary["conditions"]:
-        lines.append(f"The reasoner wrote an outcome for {summary['conditions']['reasoned']['moves_with_outcome']:.1%} of legal moves.")
+    for c, s in summary["conditions"].items():
+        if c.startswith("reasoned"):
+            lines.append(f"The reasoner wrote an outcome for {s['moves_with_outcome']:.1%} of legal moves.")
     return "\n".join(lines)
 
 
@@ -211,7 +215,7 @@ def main() -> None:
     parser.add_argument("--states", type=int, default=400, help="States per game")
     parser.add_argument("--steps", type=int, default=60, help="Turns per episode before the next seed starts")
     parser.add_argument("--seed", type=int, default=1234)
-    parser.add_argument("--conditions", nargs="+", choices=(*CONDITIONS, "reasoned"), default=list(CONDITIONS),
+    parser.add_argument("--conditions", nargs="+", choices=(*CONDITIONS, "reasoned", "reasoned-board"), default=list(CONDITIONS),
                         help="Conditions to run; outcomes always runs, because the baselines use its option names")
     parser.add_argument("--reasoner", help="Chat model (a local directory) that writes the outcomes for the reasoned condition")
     parser.add_argument("--adapter", help="LoRA adapter directory for --reasoner")
@@ -219,9 +223,12 @@ def main() -> None:
     if args.out.exists():
         raise FileExistsError(f"Refusing to overwrite {args.out}")
     conditions = ["outcomes"] + [c for c in args.conditions if c != "outcomes"]
-    if ("reasoned" in conditions) != bool(args.reasoner):
-        parser.error("--reasoner is needed exactly when the reasoned condition runs")
-    reasoner = Reasoner(args.reasoner, args.adapter) if args.reasoner else None
+    reasoned_conditions = [c for c in conditions if c.startswith("reasoned")]
+    if len(reasoned_conditions) > 1:
+        parser.error("Run one reasoned condition at a time: they need different reasoners")
+    if bool(reasoned_conditions) != bool(args.reasoner):
+        parser.error("--reasoner is needed exactly when a reasoned condition runs")
+    reasoner = Reasoner(args.reasoner, args.adapter, board=reasoned_conditions == ["reasoned-board"]) if args.reasoner else None
     client = common.JeffClient(args.url)
     records = {name: play(name, client, args.states, args.seed, args.steps, conditions, reasoner) for name in args.games}
     summaries = {name: summarise(rows) for name, rows in records.items()}

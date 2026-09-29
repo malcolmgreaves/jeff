@@ -16,6 +16,10 @@ better than random. After a LoRA fine-tune of the reasoner, the pair matches cod
 reaches 79% safe choices in Frogger. There, every miss traces back to the reasoner's mistakes. For the details, see
 [Two-stage decisions](#two-stage-decisions).
 
+A third experiment gives the fine-tuned reasoner only the board, so it has to work the outcomes out itself. It misses
+many hazards, and the pair reaches 73% safe choices in Frogger and 62% in Pac-Man. For the details, see
+[Board-only reasoner](#board-only-reasoner).
+
 ## Method
 
 `scripts/blind_options.py` drives each game with the rule bot, with 25% of its moves random so that risky states occur.
@@ -195,6 +199,85 @@ Pac-Man the difference is between −1.5 and +3.6 points.
 - **Generation costs time.** The reasoner adds about 1.5 seconds for each decision on the M1 Max, against about 0.1
   seconds for Jeff alone.
 
+## Board-only reasoner
+
+The fine-tuned reasoner in the two-stage experiment reads the facts for each direction from its input, so its task is
+a lookup. This experiment removes those facts: the reasoner sees only the board and must work each outcome out itself.
+
+### Method
+
+- **Input:** `jeff.games.reasoner.board_only` keeps the `judgement` state's board, legend, and the player's position,
+  and drops the facts for each direction. The Frogger board as drawn says that a row moves "every 2 turns" but not
+  whether it moves this turn, so the outcome can't be worked out from it. Each road and river row therefore also says
+  whether it moves at the end of this turn (`Frogger.board(timing=True)`). A player watching the game sees that timing.
+- **Output:** the reasoner first copies the squares it needs, numbered by column. In Frogger that's the rows the frog
+  can reach, and in Pac-Man the squares within two rows and two columns of Pac-Man. Then it writes one line for each
+  move: the square the move leads to, the rule that applies, then "=>" and the outcome in the `outcomes` wording's
+  phrases. For example: "up: row 1, column 4; row 1 moves right, so column 4 gets what is now in column 3: C => you
+  would be hit by a car and lose a life." In Pac-Man, the rule is that a ghost on the next square, or on a square next
+  to it, catches Pac-Man this turn.
+- **Training:** the game code writes the target answers (`jeff.games.reasoner.board_target`), and each target checks its
+  own working against the game's answer. `scripts/reasoner_data.py --input board` writes 4,000 training states and 200
+  validation states from the same seeds as the two-stage experiment's data. The LoRA setup is the same: rank 8 on the
+  top 4 layers, learning rate 1e-4. It trained for 1,500 steps of 2 rows with a 1,200-token limit, which took about 2.1
+  hours. Validation loss fell from 0.085 at step 200 to 0.030 at step 1,400 and 0.033 at step 1,500. The script saved
+  the adapter from step 1,500.
+- **Evaluation:** the `reasoned-board` condition in `scripts/blind_options.py` runs the reasoner and Jeff on the same
+  400 states in each game. Jeff sees the same options as in the two-stage experiment.
+
+### Results
+
+| Frogger (289 contested states) | Safe choice | Fact sensitivity | Agrees with rule bot |
+|---|---|---|---|
+| Random moves | 67.5% | 0.00 | 21.4% |
+| Always "stay" | 80.6% | 0.00 | |
+| `outcomes` (code writes the outcomes) | 100.0% | +0.38 | 96.0% |
+| `board` (Jeff alone, board only) | 58.8% | −0.02 | 53.0% |
+| Fine-tuned reasoner with the facts, then Jeff | 79.2% | +0.21 | 81.5% |
+| Board-only reasoner, then Jeff | 72.7% | +0.19 | 71.5% |
+
+| Pac-Man (188 contested states) | Safe choice | Fact sensitivity | Agrees with rule bot |
+|---|---|---|---|
+| Random moves | 56.6% | 0.00 | 40.7% |
+| Always "keep going" (legal in 136) | 89.7% | 0.00 | |
+| `outcomes` (code writes the outcomes) | 97.9% | +0.65 | 77.5% |
+| `board` (Jeff alone, board only) | 45.7% | −0.08 | 34.5% |
+| Fine-tuned reasoner with the facts, then Jeff | 98.9% | +0.69 | 65.0% |
+| Board-only reasoner, then Jeff | 61.7% | +0.16 | 40.5% |
+
+Compared with `outcomes` on the same contested states, the board-only pair is 22 to 32 points less safe in Frogger and
+29 to 43 points less safe in Pac-Man (95% CIs).
+
+### What the board-only reasoner wrote
+
+On the evaluation states:
+
+| Game | Copy of the squares exact | Working exact | Outcome exact | Lose-a-life verdict right |
+|---|---|---|---|---|
+| Frogger | 5% of states | 83% of moves | 86% of moves | 86% of moves |
+| Pac-Man | 21% of states | 19% of moves | 52% of moves | 85% of moves |
+
+- **It misses hazards far more than it invents them.** In Frogger it calls 39% of unsafe moves safe, and 6% of safe
+  moves unsafe. In Pac-Man it calls 67% of unsafe moves safe, and 2% of safe moves unsafe. The most common errors write
+  a safe outcome where a car will be, or where a ghost is within 2 steps.
+- **Its copies are rarely exact.** One wrong character spoils a copy, so this counts any slip. Pac-Man's outcome text
+  is often inexact for a second reason: the step counts to the nearest ghost and pellet beyond the copied window are
+  often wrong.
+- **Jeff follows correct verdicts.** In the contested states where every verdict was right (125 in Frogger, 60 in
+  Pac-Man), Jeff chose a safe move 100% of the time. In the states with a wrong verdict (164 and 128), it chose a safe
+  move 52% and 44% of the time.
+
+### Findings
+
+- **Working the outcomes out from the board is much harder for the 0.8B reasoner than reading them.** With the same
+  training setup, its lose-a-life verdicts are right for 85-86% of moves, against 94% (Frogger) and 100% (Pac-Man) when
+  the facts are in its input. Its main error is missing a hazard.
+- **The board-only reasoner still helps Jeff.** Jeff alone on the board ignores the facts (sensitivity −0.08 to −0.02).
+  With the board-only reasoner in front of it, Jeff's choices depend on them (+0.16 to +0.19). But the pair is less
+  safe than the safest fixed option in both games.
+- **Jeff's accuracy is set by the reasoner's.** As in the two-stage experiment, Jeff chooses correctly whenever the
+  verdicts it reads are right.
+
 ## Limits
 
 - **Coverage:** the experiment tests one phrasing for each wording, only the 0.8B model, and one state distribution.
@@ -204,10 +287,14 @@ Pac-Man the difference is between −1.5 and +3.6 points.
   moves" column in the JSON files, not the choices or the measures in these tables.
 - **Scope:** the experiment tests choices between actions whose consequences decide the outcome. It doesn't measure
   ordinary text classification, where the evidence is in the text and the options are labels.
-- **What the fine-tuned reasoner learned:** its training answers use the `outcomes` wording's phrases, so a reasoner
-  without errors reproduces the `outcomes` condition. Its input state already holds the facts for each direction, so the task
-  is a lookup in Frogger and a distance threshold in Pac-Man. The experiment doesn't test a reasoner that works out
-  outcomes from the board alone.
+- **What the fine-tuned reasoners learned:** their training answers use the `outcomes` wording's phrases, so a reasoner
+  without errors reproduces the `outcomes` condition. With the facts in its input, the reasoner's task is a lookup in
+  Frogger and a distance threshold in Pac-Man. The board-only reasoner has to work the outcomes out, but it learned a
+  fixed procedure written by the game code.
+- **Frogger's `board` row:** the Jeff-alone `board` wording shows the board as drawn, without the lane timing. For rows
+  that move every 2 turns, the outcome can't be worked out from that state.
+- **Board-only training length:** validation loss was still falling slowly at step 1,500, and the kept adapter wasn't
+  the one with the lowest validation loss.
 - **Overlap in Pac-Man:** Pac-Man has one maze, so evaluation states can repeat positions seen in training, with
   different ghosts and pellets. Frogger's lanes differ for each seed.
 - **Reasoner capacity:** memory limits kept the LoRA adapter to the top 4 layers. More layers or more training might
@@ -264,6 +351,16 @@ Pac-Man the difference is between −1.5 and +3.6 points.
    ```bash
    uv run python scripts/blind_options.py http://127.0.0.1:8765 --out runs/blind/reasoned-finetuned.json --states 400 \
      --conditions reasoned --reasoner checkpoints/base-0.8b --adapter checkpoints/reasoner-lora
+   ```
+
+1. For the board-only reasoner, build its data, train it, and run it against the Jeff server:
+
+   ```bash
+   uv run python scripts/reasoner_data.py --out data/reasoner-board --input board
+   uv run python scripts/reasoner_lora.py --data data/reasoner-board --out checkpoints/reasoner-board-lora \
+     --iters 1500 --max-tokens 1200
+   uv run python scripts/blind_options.py http://127.0.0.1:8765 --out runs/blind/reasoned-board.json --states 400 \
+     --conditions reasoned-board --reasoner checkpoints/base-0.8b --adapter checkpoints/reasoner-board-lora
    ```
 
 MLX inference was deterministic in these runs: a repeated Jeff run reproduced every choice. The `reasoned-*.json` files

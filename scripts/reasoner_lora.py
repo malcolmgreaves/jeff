@@ -25,7 +25,6 @@ from mlx_lm.tuner.utils import linear_to_lora_layers
 from mlx_lm.utils import save_config
 
 LORA = {"rank": 8, "dropout": 0.0, "scale": 20.0}  # mlx_lm.lora's defaults
-MAX_TOKENS = 1024  # longer rows are cut; the reasoner's rows are about 860 tokens
 REPORT_EVERY, EVAL_EVERY, VALID_BATCHES = 25, 200, 25
 
 
@@ -49,6 +48,7 @@ def main() -> None:
     parser.add_argument("--iters", type=int, default=1000)
     parser.add_argument("--batch-size", type=int, default=2)
     parser.add_argument("--learning-rate", type=float, default=1e-4)
+    parser.add_argument("--max-tokens", type=int, default=1024, help="Longer rows are cut")
     args = parser.parse_args()
     if args.out.exists():
         raise FileExistsError(f"Refusing to overwrite {args.out}")
@@ -63,13 +63,13 @@ def main() -> None:
     args.out.mkdir(parents=True)
     save_config({"model": args.model, "fine_tune_type": "lora", "num_layers": args.layers, "lora_parameters": LORA,
                  "iters": args.iters, "batch_size": args.batch_size, "learning_rate": args.learning_rate,
-                 "data": str(args.data), "mask_prompt": True}, args.out / "adapter_config.json")
+                 "data": str(args.data), "mask_prompt": True, "max_tokens": args.max_tokens}, args.out / "adapter_config.json")
     grad_checkpoint(model.layers[0])
     optimizer = optim.Adam(learning_rate=args.learning_rate)
     step = nn.value_and_grad(model, default_loss)
     model.train()
     losses, tokens, started = [], 0, time.perf_counter()
-    batches = iterate_batches(train_set, args.batch_size, MAX_TOKENS, loop=True, seed=0)
+    batches = iterate_batches(train_set, args.batch_size, args.max_tokens, loop=True, seed=0)
     for iteration, batch in zip(range(1, args.iters + 1), batches):
         (loss, count), grad = step(model, *batch)
         optimizer.update(model, grad)
@@ -81,7 +81,7 @@ def main() -> None:
                   f"tokens/s, {(time.perf_counter() - started) / iteration:.2f} s/iter", flush=True)
             losses = []
         if iteration % EVAL_EVERY == 0 or iteration == args.iters:
-            valid = evaluate(model, valid_set, args.batch_size, VALID_BATCHES, MAX_TOKENS)
+            valid = evaluate(model, valid_set, args.batch_size, VALID_BATCHES, args.max_tokens)
             model.train()
             print(f"Iter {iteration}: Val loss {valid:.3f}", flush=True)
             mx.save_safetensors(str(args.out / "adapters.safetensors"), dict(tree_flatten(model.trainable_parameters())))
