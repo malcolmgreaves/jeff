@@ -1,0 +1,977 @@
+====================================================================================================
+ROW 5 (frogger), 73.2s
+turn 32; frog at row 2, column 4
+    row 3 (road, moving right every 2 turns): .CC.CC...
+    row 2 (road, moving right every turn): C...FC..C
+    row 1 (road, moving left every 2 turns): .....C..C
+--- REASONER
+Rows you can reach:
+turn 32 is even, so rows that move every 2 turns do not move at the end of this turn
+row 3 (road, moving right every 2 turns, so it does not move this turn): 0:. 1:C 2:C 3:. 4:C 5:C 6:. 7:. 8:.
+row 2 (road, moving right every turn, so it moves at the end of this turn): 0:. 1:. 2:. 3:. 4:C 5:. 6:. 7:C 8:.
+row 1 (road, moving left every 2 turns, so it does not move this turn): 0:. 1:. 2:. 3:. 4:. 5:C 6:. 7:. 8:C
+up: row 3, column 4; row 3 does not move, so column 4 keeps what is there now: C => you would be hit by a car and lose a life.
+down: row 1, column 4; row 1 does not move, so column 4 keeps what is there now: . => safe, but one row further from the goal.
+left: row 2, column 3; row 2 moves right, so column 3 gets what is now in column 2: C => you would be hit by a car and lose a life.
+right: row 2, column 5; row 2 moves right, so column 5 gets what is now in column 4: C => you would be hit by a car and lose a life.
+stay: your square; row 2 moves right, so column 4 gets what is now in column 3: C => you would be hit by a car and lose a life.
+--- TARGET
+Rows you can reach:
+turn 32 is even, so rows that move every 2 turns do not move at the end of this turn
+row 3 (road, moving right every 2 turns, so it does not move this turn): 0:. 1:C 2:C 3:. 4:C 5:C 6:. 7:. 8:.
+row 2 (road, moving right every turn, so it moves at the end of this turn): 0:C 1:. 2:. 3:. 4:F 5:C 6:. 7:. 8:C
+row 1 (road, moving left every 2 turns, so it does not move this turn): 0:. 1:. 2:. 3:. 4:. 5:C 6:. 7:. 8:C
+up: row 3, column 4; row 3 does not move, so column 4 keeps what is there now: C => you would be hit by a car and lose a life.
+down: row 1, column 4; row 1 does not move, so column 4 keeps what is there now: . => safe, but one row further from the goal.
+left: row 2, column 3; row 2 moves right, so column 3 gets what is now in column 2: . => safe, but no progress.
+right: row 2, column 5; row 2 moves right, so column 5 gets what is now in column 4: . (your square, no car) => safe, but no progress.
+stay: your square; row 2 moves right, so column 4 gets what is now in column 3: . => safe, but no progress.
+--- COMPARISON
+turn line: match
+copy: DIFFERS
+    row 2: col 0: target C, reasoner .; col 4: target F, reasoner C; col 5: target C, reasoner .; col 7: target ., reasoner C; col 8: target C, reasoner .
+  up: working match; outcome match; lose-a-life verdict right
+      check: reads row 3 col 4 as C; own copy has C; board has C
+  down: working match; outcome match; lose-a-life verdict right
+      check: reads row 1 col 4 as .; own copy has .; board has .
+  left: working DIFFERS; outcome DIFFERS; lose-a-life verdict WRONG
+      target working:   row 2, column 3; row 2 moves right, so column 3 gets what is now in column 2: .
+      reasoner working: row 2, column 3; row 2 moves right, so column 3 gets what is now in column 2: C
+      check: reads row 2 col 2 as C; own copy has .; board has .  <-- misread vs board  <-- differs from own copy
+      target outcome:   safe, but no progress.
+      reasoner outcome: you would be hit by a car and lose a life.
+  right: working DIFFERS; outcome DIFFERS; lose-a-life verdict WRONG
+      target working:   row 2, column 5; row 2 moves right, so column 5 gets what is now in column 4: . (your square, no car)
+      reasoner working: row 2, column 5; row 2 moves right, so column 5 gets what is now in column 4: C
+      check: reads row 2 col 4 as C; own copy has C; board has F  <-- misread vs board
+      target outcome:   safe, but no progress.
+      reasoner outcome: you would be hit by a car and lose a life.
+  stay: working DIFFERS; outcome DIFFERS; lose-a-life verdict WRONG
+      target working:   your square; row 2 moves right, so column 4 gets what is now in column 3: .
+      reasoner working: your square; row 2 moves right, so column 4 gets what is now in column 3: C
+      check: reads row 2 col 3 as C; own copy has .; board has .  <-- misread vs board  <-- differs from own copy
+      target outcome:   safe, but no progress.
+      reasoner outcome: you would be hit by a car and lose a life.
+--- JEFF'S OPTIONS (5 of 5 moves have an outcome)
+    up: Move one square up, towards the goal: you would be hit by a car and lose a life.
+    down: Move one square down, away from the goal: safe, but one row further from the goal.
+    left: Move one square left: you would be hit by a car and lose a life.
+    right: Move one square right: you would be hit by a car and lose a life.
+    stay: Stay on your square this turn: you would be hit by a car and lose a life.
+    (from the target: up: Move one square up, towards the goal: you would be hit by a car and lose a life. | down: Move one square down, away from the goal: safe, but one row further from the goal. | left: Move one square left: safe, but no progress. | right: Move one square right: safe, but no progress. | stay: Stay on your square this turn: safe, but no progress.)
+====================================================================================================
+ROW 0 (pacman), 42.6s
+Pac-Man at row 7, column 1
+    row  4: #.##.#####.##.#
+    row  5: #....#...#....#
+    row  6: ####.#.#.#.####
+    row  7: #P.....#......#
+    row  8: # ###.....###.#
+    row  9: #G .#.###.#...#
+    row 10: # #.#.....#.#.#
+--- REASONER
+Squares near you:
+row 5: 0:# 1:. 2:. 3:.
+row 6: 0:# 1:# 2:# 3:#
+row 7: 0:# 1:P 2:. 3:.
+row 8: 0:# 1:- 2:# 3:#
+row 9: 0:# 1:G 2:- 3:.
+down: step 1: (8, 1) empty; step 2: (9, 1) ghost; step 3: (9, 2) empty, (10, 1) empty; step 4: (9, 3) pellet, (11, 1) empty; a ghost at step 2, a pellet at step 4 => deadly, you run into a ghost and lose a life.
+right: step 1: (7, 2) pellet; step 2: (7, 3) pellet; step 3: (7, 4) pellet; step 4: (6, 4) pellet, (7, 5) pellet; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+--- TARGET
+Squares near you:
+row 5: 0:# 1:. 2:. 3:.
+row 6: 0:# 1:# 2:# 3:#
+row 7: 0:# 1:P 2:. 3:.
+row 8: 0:# 1:- 2:# 3:#
+row 9: 0:# 1:G 2:- 3:.
+down: step 1: (8, 1) empty; step 2: (9, 1) ghost; step 3: (9, 2) empty, (10, 1) empty; step 4: (9, 3) pellet, (11, 1) empty; a ghost at step 2, a pellet at step 4 => deadly, you run into a ghost and lose a life.
+right: step 1: (7, 2) pellet; step 2: (7, 3) pellet; step 3: (7, 4) pellet; step 4: (6, 4) pellet, (7, 5) pellet; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+--- COMPARISON
+copy: match
+  down: working match; outcome match; lose-a-life verdict right
+  right: working match; outcome match; lose-a-life verdict right
+--- JEFF'S OPTIONS (2 of 2 moves have an outcome)
+    down: Move one square down: deadly, you run into a ghost and lose a life.
+    right: Move one square right: safe, no ghost close this way; eats a pellet right away.
+    (from the target: down: Move one square down: deadly, you run into a ghost and lose a life. | right: Move one square right: safe, no ghost close this way; eats a pellet right away.)
+====================================================================================================
+ROW 19 (frogger), 53.1s
+turn 25; frog at row 3, column 5
+    row 4 (safe ground): _________
+    row 3 (road, moving right every 2 turns): ...CCFC..
+    row 2 (road, moving right every turn): ....CC.C.
+--- REASONER
+Rows you can reach:
+turn 25 is odd, so rows that move every 2 turns move at the end of this turn
+row 4 (grass)
+row 3 (road, moving right every 2 turns, so it moves at the end of this turn): 0:. 1:. 2:. 3:C 4:C 5:F 6:C 7:. 8:.
+row 2 (road, moving right every turn, so it moves at the end of this turn): 0:. 1:. 2:. 3:. 4:C 5:C 6:. 7:C 8:.
+up: row 4 is grass => safe, and one row closer to the goal.
+down: row 2, column 5; row 2 moves right, so column 5 gets what is now in column 4: C => you would be hit by a car and lose a life.
+left: row 3, column 4; row 3 moves right, so column 4 gets what is now in column 3: C => you would be hit by a car and lose a life.
+right: row 3, column 6; row 3 moves right, so column 6 gets what is now in column 5: . (your square, no car) => safe, but no progress.
+stay: your square; row 3 moves right, so column 5 gets what is now in column 4: C => you would be hit by a car and lose a life.
+--- TARGET
+Rows you can reach:
+turn 25 is odd, so rows that move every 2 turns move at the end of this turn
+row 4 (grass)
+row 3 (road, moving right every 2 turns, so it moves at the end of this turn): 0:. 1:. 2:. 3:C 4:C 5:F 6:C 7:. 8:.
+row 2 (road, moving right every turn, so it moves at the end of this turn): 0:. 1:. 2:. 3:. 4:C 5:C 6:. 7:C 8:.
+up: row 4 is grass => safe, and one row closer to the goal.
+down: row 2, column 5; row 2 moves right, so column 5 gets what is now in column 4: C => you would be hit by a car and lose a life.
+left: row 3, column 4; row 3 moves right, so column 4 gets what is now in column 3: C => you would be hit by a car and lose a life.
+right: row 3, column 6; row 3 moves right, so column 6 gets what is now in column 5: . (your square, no car) => safe, but no progress.
+stay: your square; row 3 moves right, so column 5 gets what is now in column 4: C => you would be hit by a car and lose a life.
+--- COMPARISON
+turn line: match
+copy: match
+  up: working match; outcome match; lose-a-life verdict right
+  down: working match; outcome match; lose-a-life verdict right
+      check: reads row 2 col 4 as C; own copy has C; board has C
+  left: working match; outcome match; lose-a-life verdict right
+      check: reads row 3 col 3 as C; own copy has C; board has C
+  right: working match; outcome match; lose-a-life verdict right
+      check: reads row 3 col 5 as .; own copy has F; board has F
+  stay: working match; outcome match; lose-a-life verdict right
+      check: reads row 3 col 4 as C; own copy has C; board has C
+--- JEFF'S OPTIONS (5 of 5 moves have an outcome)
+    up: Move one square up, towards the goal: safe, and one row closer to the goal.
+    down: Move one square down, away from the goal: you would be hit by a car and lose a life.
+    left: Move one square left: you would be hit by a car and lose a life.
+    right: Move one square right: safe, but no progress.
+    stay: Stay on your square this turn: you would be hit by a car and lose a life.
+    (from the target: up: Move one square up, towards the goal: safe, and one row closer to the goal. | down: Move one square down, away from the goal: you would be hit by a car and lose a life. | left: Move one square left: you would be hit by a car and lose a life. | right: Move one square right: safe, but no progress. | stay: Stay on your square this turn: you would be hit by a car and lose a life.)
+====================================================================================================
+ROW 31 (pacman), 76.5s
+Pac-Man at row 10, column 7
+    row  7: #  ....#......#
+    row  8: # ###.....###.#
+    row  9: #  .#.###.#...#
+    row 10: # #.#G P..#.#.#
+    row 11: #    G  ......#
+    row 12: ###############
+--- REASONER
+Squares near you:
+row 8: 5:. 6:. 7:. 8:. 9:.
+row 9: 5:. 6:# 7:# 8:# 9:.
+row 10: 5:G 6:- 7:P 8:. 9:.
+row 11: 5:- 6:- 7:- 8:. 9:.
+row 12: 5:# 6:# 7:# 8:# 9:#
+down: step 1: (11, 7) empty; step 2: (11, 6) empty, (11, 8) pellet; step 3: (10, 6) empty, (10, 8) pellet, (11, 5) empty, (11, 9) pellet; step 4: (10, 5) ghost, (10, 9) pellet, (11, 4) empty, (11, 10) pellet; a ghost at step 4, a pellet at step 2 => risky, a ghost is close this way; pellets a few steps along.
+left: step 1: (10, 6) empty; step 2: (10, 5) ghost, (11, 6) empty; step 3: (9, 5) pellet, (11, 5) empty, (11, 7) empty; step 4: (8, 5) pellet, (11, 4) empty, (11, 8) pellet; a ghost at step 2, a pellet at step 2 => deadly, you run into a ghost and lose a life.
+right: step 1: (10, 8) pellet; step 2: (10, 9) pellet, (11, 8) pellet; step 3: (9, 9) pellet, (11, 7) empty, (11, 9) pellet; step 4: (8, 9) pellet, (11, 6) empty, (11, 10) pellet; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+--- TARGET
+Squares near you:
+row 8: 5:. 6:. 7:. 8:. 9:.
+row 9: 5:. 6:# 7:# 8:# 9:.
+row 10: 5:G 6:- 7:P 8:. 9:.
+row 11: 5:G 6:- 7:- 8:. 9:.
+row 12: 5:# 6:# 7:# 8:# 9:#
+down: step 1: (11, 7) empty; step 2: (11, 6) empty, (11, 8) pellet; step 3: (10, 6) empty, (10, 8) pellet, (11, 5) ghost, (11, 9) pellet; step 4: (10, 5) ghost, (10, 9) pellet, (11, 4) empty, (11, 10) pellet; a ghost at step 3, a pellet at step 2 => risky, a ghost is close this way; pellets a few steps along.
+left: step 1: (10, 6) empty; step 2: (10, 5) ghost, (11, 6) empty; step 3: (9, 5) pellet, (11, 5) ghost, (11, 7) empty; step 4: (8, 5) pellet, (11, 4) empty, (11, 8) pellet; a ghost at step 2, a pellet at step 3 => deadly, you run into a ghost and lose a life.
+right: step 1: (10, 8) pellet; step 2: (10, 9) pellet, (11, 8) pellet; step 3: (9, 9) pellet, (11, 7) empty, (11, 9) pellet; step 4: (8, 9) pellet, (11, 6) empty, (11, 10) pellet; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+--- COMPARISON
+copy: DIFFERS
+    row 11: header differs: target 'row 11: 5:G 6:- 7:- 8:. 9:.', reasoner 'row 11: 5:- 6:- 7:- 8:. 9:.'
+    row 11: col 5: target G, reasoner -
+  down: working DIFFERS; outcome match; lose-a-life verdict right
+      target working:   step 1: (11, 7) empty; step 2: (11, 6) empty, (11, 8) pellet; step 3: (10, 6) empty, (10, 8) pellet, (11, 5) ghost, (11, 9) pellet; step 4: (10, 5) ghost, (10, 9) pellet, (11, 4) empty, (11, 10) pellet; a ghost at step 3, a pellet at step 2
+      reasoner working: step 1: (11, 7) empty; step 2: (11, 6) empty, (11, 8) pellet; step 3: (10, 6) empty, (10, 8) pellet, (11, 5) empty, (11, 9) pellet; step 4: (10, 5) ghost, (10, 9) pellet, (11, 4) empty, (11, 10) pellet; a ghost at step 4, a pellet at step 2
+      check: lists (11, 5) as empty; its own copy has empty; the maze has ghost
+  left: working DIFFERS; outcome match; lose-a-life verdict right
+      target working:   step 1: (10, 6) empty; step 2: (10, 5) ghost, (11, 6) empty; step 3: (9, 5) pellet, (11, 5) ghost, (11, 7) empty; step 4: (8, 5) pellet, (11, 4) empty, (11, 8) pellet; a ghost at step 2, a pellet at step 3
+      reasoner working: step 1: (10, 6) empty; step 2: (10, 5) ghost, (11, 6) empty; step 3: (9, 5) pellet, (11, 5) empty, (11, 7) empty; step 4: (8, 5) pellet, (11, 4) empty, (11, 8) pellet; a ghost at step 2, a pellet at step 2
+      check: lists (11, 5) as empty; its own copy has empty; the maze has ghost
+  right: working match; outcome match; lose-a-life verdict right
+--- JEFF'S OPTIONS (3 of 3 moves have an outcome)
+    down: Move one square down: risky, a ghost is close this way; pellets a few steps along.
+    left: Move one square left: deadly, you run into a ghost and lose a life.
+    right: Move one square right: safe, no ghost close this way; eats a pellet right away.
+    (from the target: down: Move one square down: risky, a ghost is close this way; pellets a few steps along. | left: Move one square left: deadly, you run into a ghost and lose a life. | right: Move one square right: safe, no ghost close this way; eats a pellet right away.)
+====================================================================================================
+ROW 102 (frogger), 50.0s
+turn 47; frog at row 6, column 5
+    row 7 (river, moving right every 2 turns): LLLLL~~~~
+    row 6 (river, moving left every turn): ~LLLLF~~~
+    row 5 (river, moving right every 2 turns): LLLL~~~~L
+--- REASONER
+Rows you can reach:
+turn 47 is odd, so rows that move every 2 turns move at the end of this turn
+row 7 (river, moving right every 2 turns, so it moves at the end of this turn): 0:L 1:L 2:L 3:L 4:L 5:~ 6:~ 7:~ 8:~
+row 6 (river, moving left every turn, so it moves at the end of this turn): 0:~ 1:L 2:L 3:L 4:L 5:F 6:~ 7:~ 8:~
+row 5 (river, moving right every 2 turns, so it moves at the end of this turn): 0:L 1:L 2:L 3:L 4:~ 5:~ 6:~ 7:~ 8:L
+up: row 7, column 5 is open water => you would fall in the water and lose a life.
+down: row 5, column 5 is open water => you would fall in the water and lose a life.
+left: row 6, column 4 is a log; the log moves left to column 3 => safe, but no progress.
+right: row 6, column 6 is open water => you would fall in the water and lose a life.
+stay: your square is a log; the log moves left to column 4 => safe, but no progress.
+--- TARGET
+Rows you can reach:
+turn 47 is odd, so rows that move every 2 turns move at the end of this turn
+row 7 (river, moving right every 2 turns, so it moves at the end of this turn): 0:L 1:L 2:L 3:L 4:L 5:~ 6:~ 7:~ 8:~
+row 6 (river, moving left every turn, so it moves at the end of this turn): 0:~ 1:L 2:L 3:L 4:L 5:F 6:~ 7:~ 8:~
+row 5 (river, moving right every 2 turns, so it moves at the end of this turn): 0:L 1:L 2:L 3:L 4:~ 5:~ 6:~ 7:~ 8:L
+up: row 7, column 5 is open water => you would fall in the water and lose a life.
+down: row 5, column 5 is open water => you would fall in the water and lose a life.
+left: row 6, column 4 is a log; the log moves left to column 3 => safe, but no progress.
+right: row 6, column 6 is open water => you would fall in the water and lose a life.
+stay: your square is a log; the log moves left to column 4 => safe, but no progress.
+--- COMPARISON
+turn line: match
+copy: match
+  up: working match; outcome match; lose-a-life verdict right
+      check: reads row 7 col 5 as ~; own copy has ~; board has ~
+  down: working match; outcome match; lose-a-life verdict right
+      check: reads row 5 col 5 as ~; own copy has ~; board has ~
+  left: working match; outcome match; lose-a-life verdict right
+      check: reads row 6 col 4 as L; own copy has L; board has L
+  right: working match; outcome match; lose-a-life verdict right
+      check: reads row 6 col 6 as ~; own copy has ~; board has ~
+  stay: working match; outcome match; lose-a-life verdict right
+      check: reads row 6 col 5 as L; own copy has F; board has F
+--- JEFF'S OPTIONS (5 of 5 moves have an outcome)
+    up: Move one square up, towards the goal: you would fall in the water and lose a life.
+    down: Move one square down, away from the goal: you would fall in the water and lose a life.
+    left: Move one square left: safe, but no progress.
+    right: Move one square right: you would fall in the water and lose a life.
+    stay: Stay on your square this turn: safe, but no progress.
+    (from the target: up: Move one square up, towards the goal: you would fall in the water and lose a life. | down: Move one square down, away from the goal: you would fall in the water and lose a life. | left: Move one square left: safe, but no progress. | right: Move one square right: you would fall in the water and lose a life. | stay: Stay on your square this turn: safe, but no progress.)
+====================================================================================================
+ROW 140 (pacman), 53.8s
+Pac-Man at row 3, column 1
+    row  0: ###############
+    row  1: #......#......#
+    row  2: #.###..#..###.#
+    row  3: #P.G..........#
+    row  4: #G##.#####.##.#
+    row  5: #    #...#....#
+    row  6: #### #.#.#.####
+--- REASONER
+Squares near you:
+row 1: 0:# 1:. 2:. 3:.
+row 2: 0:# 1:. 2:# 3:#
+row 3: 0:# 1:P 2:G 3:.
+row 4: 0:# 1:G 2:# 3:#
+row 5: 0:# 1:- 2:- 3:-
+down: step 1: (4, 1) empty; step 2: (5, 1) empty; step 3: (5, 2) empty; step 4: (5, 3) empty; no ghost within 4 steps, no pellet within 4 steps => safe, no ghost close this way; pellets further away.
+right: step 1: (3, 2) pellet; step 2: (3, 3) pellet; step 3: (3, 4) pellet; step 4: (3, 5) pellet, (4, 4) pellet; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+up: step 1: (2, 1) pellet; step 2: (1, 1) pellet; step 3: (1, 2) pellet; step 4: (1, 3) pellet; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+--- TARGET
+Squares near you:
+row 1: 0:# 1:. 2:. 3:.
+row 2: 0:# 1:. 2:# 3:#
+row 3: 0:# 1:P 2:. 3:G
+row 4: 0:# 1:G 2:# 3:#
+row 5: 0:# 1:- 2:- 3:-
+down: step 1: (4, 1) ghost; step 2: (5, 1) empty; step 3: (5, 2) empty; step 4: (5, 3) empty; a ghost at step 1, no pellet within 4 steps => deadly, you run into a ghost and lose a life.
+right: step 1: (3, 2) pellet; step 2: (3, 3) ghost; step 3: (3, 4) pellet; step 4: (3, 5) pellet, (4, 4) pellet; a ghost at step 2, a pellet at step 1 => deadly, you run into a ghost and lose a life.
+up: step 1: (2, 1) pellet; step 2: (1, 1) pellet; step 3: (1, 2) pellet; step 4: (1, 3) pellet; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+--- COMPARISON
+copy: DIFFERS
+    row 3: col 2: target ., reasoner G; col 3: target G, reasoner .
+  down: working DIFFERS; outcome DIFFERS; lose-a-life verdict WRONG
+      target working:   step 1: (4, 1) ghost; step 2: (5, 1) empty; step 3: (5, 2) empty; step 4: (5, 3) empty; a ghost at step 1, no pellet within 4 steps
+      reasoner working: step 1: (4, 1) empty; step 2: (5, 1) empty; step 3: (5, 2) empty; step 4: (5, 3) empty; no ghost within 4 steps, no pellet within 4 steps
+      check: lists (4, 1) as empty; its own copy has ghost; the maze has ghost
+      target outcome:   deadly, you run into a ghost and lose a life.
+      reasoner outcome: safe, no ghost close this way; pellets further away.
+  right: working DIFFERS; outcome DIFFERS; lose-a-life verdict WRONG
+      target working:   step 1: (3, 2) pellet; step 2: (3, 3) ghost; step 3: (3, 4) pellet; step 4: (3, 5) pellet, (4, 4) pellet; a ghost at step 2, a pellet at step 1
+      reasoner working: step 1: (3, 2) pellet; step 2: (3, 3) pellet; step 3: (3, 4) pellet; step 4: (3, 5) pellet, (4, 4) pellet; no ghost within 4 steps, a pellet at step 1
+      check: lists (3, 2) as pellet; its own copy has ghost; the maze has pellet
+      check: lists (3, 3) as pellet; its own copy has pellet; the maze has ghost
+      target outcome:   deadly, you run into a ghost and lose a life.
+      reasoner outcome: safe, no ghost close this way; eats a pellet right away.
+  up: working match; outcome match; lose-a-life verdict right
+--- JEFF'S OPTIONS (3 of 3 moves have an outcome)
+    down: Move one square down: safe, no ghost close this way; pellets further away.
+    right: Move one square right: safe, no ghost close this way; eats a pellet right away.
+    up: Move one square up: safe, no ghost close this way; eats a pellet right away.
+    (from the target: down: Move one square down: deadly, you run into a ghost and lose a life. | right: Move one square right: deadly, you run into a ghost and lose a life. | up: Move one square up: safe, no ghost close this way; eats a pellet right away.)
+====================================================================================================
+ROW 14 (frogger), 45.2s
+turn 14; frog at row 5, column 8
+    row 6 (river, moving right every turn): ~~~LLL~~~
+    row 5 (river, moving right every turn): LLL~~~~LF
+    row 4 (safe ground): _________
+--- REASONER
+Rows you can reach:
+turn 14 is even, so rows that move every 2 turns do not move at the end of this turn
+row 6 (river, moving right every turn, so it moves at the end of this turn): 0:~ 1:~ 2:~ 3:L 4:L 5:L 6:L 7:~ 8:~
+row 5 (river, moving right every turn, so it moves at the end of this turn): 0:L 1:L 2:L 3:~ 4:~ 5:~ 6:~ 7:L 8:F
+row 4 (grass)
+up: row 6, column 8 is open water => you would fall in the water and lose a life.
+down: row 4 is grass => safe, but one row further from the goal.
+left: row 5, column 7 is a log; the log moves right to column 8 => safe, but no progress.
+stay: your square is a log; the log moves right to column 9, past the edge of the board => you would fall in the water and lose a life.
+--- TARGET
+Rows you can reach:
+turn 14 is even, so rows that move every 2 turns do not move at the end of this turn
+row 6 (river, moving right every turn, so it moves at the end of this turn): 0:~ 1:~ 2:~ 3:L 4:L 5:L 6:~ 7:~ 8:~
+row 5 (river, moving right every turn, so it moves at the end of this turn): 0:L 1:L 2:L 3:~ 4:~ 5:~ 6:~ 7:L 8:F
+row 4 (grass)
+up: row 6, column 8 is open water => you would fall in the water and lose a life.
+down: row 4 is grass => safe, but one row further from the goal.
+left: row 5, column 7 is a log; the log moves right to column 8 => safe, but no progress.
+stay: your square is a log; the log moves right to column 9, past the edge of the board => you would fall in the water and lose a life.
+--- COMPARISON
+turn line: match
+copy: DIFFERS
+    row 6: col 6: target ~, reasoner L
+  up: working match; outcome match; lose-a-life verdict right
+      check: reads row 6 col 8 as ~; own copy has ~; board has ~
+  down: working match; outcome match; lose-a-life verdict right
+  left: working match; outcome match; lose-a-life verdict right
+      check: reads row 5 col 7 as L; own copy has L; board has L
+  stay: working match; outcome match; lose-a-life verdict right
+      check: reads row 5 col 8 as L; own copy has F; board has F
+--- JEFF'S OPTIONS (4 of 4 moves have an outcome)
+    up: Move one square up, towards the goal: you would fall in the water and lose a life.
+    down: Move one square down, away from the goal: safe, but one row further from the goal.
+    left: Move one square left: safe, but no progress.
+    stay: Stay on your square this turn: you would fall in the water and lose a life.
+    (from the target: up: Move one square up, towards the goal: you would fall in the water and lose a life. | down: Move one square down, away from the goal: safe, but one row further from the goal. | left: Move one square left: safe, but no progress. | stay: Stay on your square this turn: you would fall in the water and lose a life.)
+====================================================================================================
+ROW 82 (pacman), 66.9s
+Pac-Man at row 8, column 5
+    row  5: #....#...#....#
+    row  6: ####G#.#.#.####
+    row  7: #   G .#......#
+    row  8: # ###P....###.#
+    row  9: #   #.###.#...#
+    row 10: # #.#.....#.#.#
+    row 11: #       ......#
+--- REASONER
+Squares near you:
+row 6: 3:# 4:. 5:# 6:. 7:#
+row 7: 3:- 4:- 5:. 6:. 7:#
+row 8: 3:# 4:# 5:P 6:. 7:.
+row 9: 3:. 4:# 5:. 6:# 7:#
+row 10: 3:. 4:# 5:. 6:. 7:.
+down: step 1: (9, 5) pellet; step 2: (10, 5) pellet; step 3: (10, 6) pellet, (11, 5) empty; step 4: (10, 7) pellet, (11, 4) empty, (11, 6) empty; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+right: step 1: (8, 6) pellet; step 2: (7, 6) pellet, (8, 7) pellet; step 3: (6, 6) pellet, (7, 5) empty, (8, 8) pellet; step 4: (5, 6) pellet, (7, 4) empty, (7, 8) pellet, (8, 9) pellet; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+up: step 1: (7, 5) pellet; step 2: (7, 4) empty, (7, 6) pellet; step 3: (6, 4) empty, (6, 6) pellet, (7, 3) empty, (8, 6) pellet; step 4: (5, 4) empty, (5, 6) pellet, (7, 2) empty, (8, 7) pellet; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+--- TARGET
+Squares near you:
+row 6: 3:# 4:G 5:# 6:. 7:#
+row 7: 3:- 4:G 5:- 6:. 7:#
+row 8: 3:# 4:# 5:P 6:. 7:.
+row 9: 3:- 4:# 5:. 6:# 7:#
+row 10: 3:. 4:# 5:. 6:. 7:.
+down: step 1: (9, 5) pellet; step 2: (10, 5) pellet; step 3: (10, 6) pellet, (11, 5) empty; step 4: (10, 7) pellet, (11, 4) empty, (11, 6) empty; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+right: step 1: (8, 6) pellet; step 2: (7, 6) pellet, (8, 7) pellet; step 3: (6, 6) pellet, (7, 5) empty, (8, 8) pellet; step 4: (5, 6) pellet, (7, 4) ghost, (7, 8) pellet, (8, 9) pellet; a ghost at step 4, a pellet at step 1 => risky, a ghost is close this way; eats a pellet right away.
+up: step 1: (7, 5) empty; step 2: (7, 4) ghost, (7, 6) pellet; step 3: (6, 4) ghost, (6, 6) pellet, (7, 3) empty, (8, 6) pellet; step 4: (5, 4) pellet, (5, 6) pellet, (7, 2) empty, (8, 7) pellet; a ghost at step 2, a pellet at step 2 => deadly, you run into a ghost and lose a life.
+--- COMPARISON
+copy: DIFFERS
+    row 6: header differs: target 'row 6: 3:# 4:G 5:# 6:. 7:#', reasoner 'row 6: 3:# 4:. 5:# 6:. 7:#'
+    row 6: col 4: target G, reasoner .
+    row 7: header differs: target 'row 7: 3:- 4:G 5:- 6:. 7:#', reasoner 'row 7: 3:- 4:- 5:. 6:. 7:#'
+    row 7: col 4: target G, reasoner -; col 5: target -, reasoner .
+    row 9: header differs: target 'row 9: 3:- 4:# 5:. 6:# 7:#', reasoner 'row 9: 3:. 4:# 5:. 6:# 7:#'
+    row 9: col 3: target -, reasoner .
+  down: working match; outcome match; lose-a-life verdict right
+  right: working DIFFERS; outcome DIFFERS; lose-a-life verdict right
+      target working:   step 1: (8, 6) pellet; step 2: (7, 6) pellet, (8, 7) pellet; step 3: (6, 6) pellet, (7, 5) empty, (8, 8) pellet; step 4: (5, 6) pellet, (7, 4) ghost, (7, 8) pellet, (8, 9) pellet; a ghost at step 4, a pellet at step 1
+      reasoner working: step 1: (8, 6) pellet; step 2: (7, 6) pellet, (8, 7) pellet; step 3: (6, 6) pellet, (7, 5) empty, (8, 8) pellet; step 4: (5, 6) pellet, (7, 4) empty, (7, 8) pellet, (8, 9) pellet; no ghost within 4 steps, a pellet at step 1
+      check: lists (7, 5) as empty; its own copy has pellet; the maze has empty
+      check: lists (7, 4) as empty; its own copy has empty; the maze has ghost
+      target outcome:   risky, a ghost is close this way; eats a pellet right away.
+      reasoner outcome: safe, no ghost close this way; eats a pellet right away.
+  up: working DIFFERS; outcome DIFFERS; lose-a-life verdict WRONG
+      target working:   step 1: (7, 5) empty; step 2: (7, 4) ghost, (7, 6) pellet; step 3: (6, 4) ghost, (6, 6) pellet, (7, 3) empty, (8, 6) pellet; step 4: (5, 4) pellet, (5, 6) pellet, (7, 2) empty, (8, 7) pellet; a ghost at step 2, a pellet at step 2
+      reasoner working: step 1: (7, 5) pellet; step 2: (7, 4) empty, (7, 6) pellet; step 3: (6, 4) empty, (6, 6) pellet, (7, 3) empty, (8, 6) pellet; step 4: (5, 4) empty, (5, 6) pellet, (7, 2) empty, (8, 7) pellet; no ghost within 4 steps, a pellet at step 1
+      check: lists (7, 5) as pellet; its own copy has pellet; the maze has empty
+      check: lists (7, 4) as empty; its own copy has empty; the maze has ghost
+      check: lists (6, 4) as empty; its own copy has pellet; the maze has ghost
+      check: lists (5, 4) as empty; its own copy has outside the copy; the maze has pellet
+      target outcome:   deadly, you run into a ghost and lose a life.
+      reasoner outcome: safe, no ghost close this way; eats a pellet right away.
+--- JEFF'S OPTIONS (3 of 3 moves have an outcome)
+    down: Move one square down: safe, no ghost close this way; eats a pellet right away.
+    right: Move one square right: safe, no ghost close this way; eats a pellet right away.
+    up: Move one square up: safe, no ghost close this way; eats a pellet right away.
+    (from the target: down: Move one square down: safe, no ghost close this way; eats a pellet right away. | right: Move one square right: risky, a ghost is close this way; eats a pellet right away. | up: Move one square up: deadly, you run into a ghost and lose a life.)
+====================================================================================================
+ROW 7 (frogger), 44.1s
+turn 28; frog at row 4, column 8
+    row 5 (river, moving right every turn): ~~~LLLLL~
+    row 4 (safe ground): ________F
+    row 3 (road, moving right every 2 turns): C.CC....C
+--- REASONER
+Rows you can reach:
+turn 28 is even, so rows that move every 2 turns do not move at the end of this turn
+row 5 (river, moving right every turn, so it moves at the end of this turn): 0:~ 1:~ 2:~ 3:L 4:L 5:L 6:L 7:L 8:~
+row 4 (grass)
+row 3 (road, moving right every 2 turns, so it does not move this turn): 0:C 1:. 2:C 3:C 4:. 5:. 6:. 7:. 8:C
+up: row 5, column 8 is open water => you would fall in the water and lose a life.
+down: row 3, column 8; row 3 does not move, so column 8 keeps what is there now: C => you would be hit by a car and lose a life.
+left: row 4 is grass => safe, but no progress.
+stay: row 4 is grass => safe, but no progress.
+--- TARGET
+Rows you can reach:
+turn 28 is even, so rows that move every 2 turns do not move at the end of this turn
+row 5 (river, moving right every turn, so it moves at the end of this turn): 0:~ 1:~ 2:~ 3:L 4:L 5:L 6:L 7:L 8:~
+row 4 (grass)
+row 3 (road, moving right every 2 turns, so it does not move this turn): 0:C 1:. 2:C 3:C 4:. 5:. 6:. 7:. 8:C
+up: row 5, column 8 is open water => you would fall in the water and lose a life.
+down: row 3, column 8; row 3 does not move, so column 8 keeps what is there now: C => you would be hit by a car and lose a life.
+left: row 4 is grass => safe, but no progress.
+stay: row 4 is grass => safe, but no progress.
+--- COMPARISON
+turn line: match
+copy: match
+  up: working match; outcome match; lose-a-life verdict right
+      check: reads row 5 col 8 as ~; own copy has ~; board has ~
+  down: working match; outcome match; lose-a-life verdict right
+      check: reads row 3 col 8 as C; own copy has C; board has C
+  left: working match; outcome match; lose-a-life verdict right
+  stay: working match; outcome match; lose-a-life verdict right
+--- JEFF'S OPTIONS (4 of 4 moves have an outcome)
+    up: Move one square up, towards the goal: you would fall in the water and lose a life.
+    down: Move one square down, away from the goal: you would be hit by a car and lose a life.
+    left: Move one square left: safe, but no progress.
+    stay: Stay on your square this turn: safe, but no progress.
+    (from the target: up: Move one square up, towards the goal: you would fall in the water and lose a life. | down: Move one square down, away from the goal: you would be hit by a car and lose a life. | left: Move one square left: safe, but no progress. | stay: Stay on your square this turn: safe, but no progress.)
+====================================================================================================
+ROW 44 (pacman), 61.1s
+Pac-Man at row 9, column 9
+    row  6: #### #.#.#.####
+    row  7: #    ..#G..   #
+    row  8: # ###...G.### #
+    row  9: # ..#.###P#   #
+    row 10: # #.#     # # #
+    row 11: #           ..#
+    row 12: ###############
+--- REASONER
+Squares near you:
+row 7: 7:# 8:G 9:. 10:. 11:.
+row 8: 7:. 8:. 9:. 10:# 11:#
+row 9: 7:# 8:# 9:P 10:# 11:.
+row 10: 7:- 8:- 9:- 10:# 11:.
+row 11: 7:- 8:- 9:- 10:- 11:-
+down: step 1: (10, 9) empty; step 2: (10, 8) empty, (11, 9) empty; step 3: (10, 7) empty, (11, 8) empty, (11, 10) empty; step 4: (10, 6) empty, (11, 7) empty, (11, 11) empty; no ghost within 4 steps, no pellet within 4 steps => safe, no ghost close this way; pellets further away.
+up: step 1: (8, 9) pellet; step 2: (7, 9) pellet, (8, 8) pellet; step 3: (7, 8) pellet, (7, 10) pellet, (8, 7) pellet; step 4: (6, 8) pellet, (6, 10) pellet, (7, 11) pellet, (8, 6) pellet; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+--- TARGET
+Squares near you:
+row 7: 7:# 8:G 9:. 10:. 11:-
+row 8: 7:. 8:G 9:. 10:# 11:#
+row 9: 7:# 8:# 9:P 10:# 11:-
+row 10: 7:- 8:- 9:- 10:# 11:-
+row 11: 7:- 8:- 9:- 10:- 11:-
+down: step 1: (10, 9) empty; step 2: (10, 8) empty, (11, 9) empty; step 3: (10, 7) empty, (11, 8) empty, (11, 10) empty; step 4: (10, 6) empty, (11, 7) empty, (11, 11) empty; no ghost within 4 steps, no pellet within 4 steps => safe, no ghost close this way; pellets further away.
+up: step 1: (8, 9) pellet; step 2: (7, 9) pellet, (8, 8) ghost; step 3: (7, 8) ghost, (7, 10) pellet, (8, 7) pellet; step 4: (6, 8) pellet, (6, 10) pellet, (7, 11) empty, (8, 6) pellet; a ghost at step 2, a pellet at step 1 => deadly, you run into a ghost and lose a life.
+--- COMPARISON
+copy: DIFFERS
+    row 7: header differs: target 'row 7: 7:# 8:G 9:. 10:. 11:-', reasoner 'row 7: 7:# 8:G 9:. 10:. 11:.'
+    row 7: col 11: target -, reasoner .
+    row 8: header differs: target 'row 8: 7:. 8:G 9:. 10:# 11:#', reasoner 'row 8: 7:. 8:. 9:. 10:# 11:#'
+    row 8: col 8: target G, reasoner .
+    row 9: header differs: target 'row 9: 7:# 8:# 9:P 10:# 11:-', reasoner 'row 9: 7:# 8:# 9:P 10:# 11:.'
+    row 9: col 11: target -, reasoner .
+    row 10: header differs: target 'row 10: 7:- 8:- 9:- 10:# 11:-', reasoner 'row 10: 7:- 8:- 9:- 10:# 11:.'
+    row 10: col 11: target -, reasoner .
+  down: working match; outcome match; lose-a-life verdict right
+  up: working DIFFERS; outcome DIFFERS; lose-a-life verdict WRONG
+      target working:   step 1: (8, 9) pellet; step 2: (7, 9) pellet, (8, 8) ghost; step 3: (7, 8) ghost, (7, 10) pellet, (8, 7) pellet; step 4: (6, 8) pellet, (6, 10) pellet, (7, 11) empty, (8, 6) pellet; a ghost at step 2, a pellet at step 1
+      reasoner working: step 1: (8, 9) pellet; step 2: (7, 9) pellet, (8, 8) pellet; step 3: (7, 8) pellet, (7, 10) pellet, (8, 7) pellet; step 4: (6, 8) pellet, (6, 10) pellet, (7, 11) pellet, (8, 6) pellet; no ghost within 4 steps, a pellet at step 1
+      check: lists (8, 8) as pellet; its own copy has pellet; the maze has ghost
+      check: lists (7, 8) as pellet; its own copy has ghost; the maze has ghost
+      check: lists (7, 11) as pellet; its own copy has pellet; the maze has empty
+      target outcome:   deadly, you run into a ghost and lose a life.
+      reasoner outcome: safe, no ghost close this way; eats a pellet right away.
+--- JEFF'S OPTIONS (2 of 2 moves have an outcome)
+    down: Move one square down: safe, no ghost close this way; pellets further away.
+    up: Move one square up: safe, no ghost close this way; eats a pellet right away.
+    (from the target: down: Move one square down: safe, no ghost close this way; pellets further away. | up: Move one square up: deadly, you run into a ghost and lose a life.)
+====================================================================================================
+ROW 68 (frogger), 52.6s
+turn 11; frog at row 5, column 8
+    row 6 (river, moving right every turn): LLL~~~~~~
+    row 5 (river, moving right every turn): ~~~~LLLLF
+    row 4 (safe ground): _________
+--- REASONER
+Rows you can reach:
+turn 11 is odd, so rows that move every 2 turns move at the end of this turn
+row 6 (river, moving right every turn, so it moves at the end of this turn): 0:L 1:L 2:L 3:~ 4:~ 5:~ 6:~ 7:~ 8:~
+row 5 (river, moving right every turn, so it moves at the end of this turn): 0:~ 1:~ 2:~ 3:~ 4:L 5:L 6:L 7:L 8:F
+row 4 (grass)
+up: row 6, column 8 is open water => you would fall in the water and lose a life.
+down: row 4 is grass => safe, but one row further from the goal.
+left: row 5, column 7 is a log; the log moves right to column 8 => safe, but no progress.
+stay: your square is a log; the log moves right to column 9, past the edge of the board => you would fall in the water and lose a life.
+--- TARGET
+Rows you can reach:
+turn 11 is odd, so rows that move every 2 turns move at the end of this turn
+row 6 (river, moving right every turn, so it moves at the end of this turn): 0:L 1:L 2:L 3:~ 4:~ 5:~ 6:~ 7:~ 8:~
+row 5 (river, moving right every turn, so it moves at the end of this turn): 0:~ 1:~ 2:~ 3:~ 4:L 5:L 6:L 7:L 8:F
+row 4 (grass)
+up: row 6, column 8 is open water => you would fall in the water and lose a life.
+down: row 4 is grass => safe, but one row further from the goal.
+left: row 5, column 7 is a log; the log moves right to column 8 => safe, but no progress.
+stay: your square is a log; the log moves right to column 9, past the edge of the board => you would fall in the water and lose a life.
+--- COMPARISON
+turn line: match
+copy: match
+  up: working match; outcome match; lose-a-life verdict right
+      check: reads row 6 col 8 as ~; own copy has ~; board has ~
+  down: working match; outcome match; lose-a-life verdict right
+  left: working match; outcome match; lose-a-life verdict right
+      check: reads row 5 col 7 as L; own copy has L; board has L
+  stay: working match; outcome match; lose-a-life verdict right
+      check: reads row 5 col 8 as L; own copy has F; board has F
+--- JEFF'S OPTIONS (4 of 4 moves have an outcome)
+    up: Move one square up, towards the goal: you would fall in the water and lose a life.
+    down: Move one square down, away from the goal: safe, but one row further from the goal.
+    left: Move one square left: safe, but no progress.
+    stay: Stay on your square this turn: you would fall in the water and lose a life.
+    (from the target: up: Move one square up, towards the goal: you would fall in the water and lose a life. | down: Move one square down, away from the goal: safe, but one row further from the goal. | left: Move one square left: safe, but no progress. | stay: Stay on your square this turn: you would fall in the water and lose a life.)
+====================================================================================================
+ROW 107 (pacman), 69.4s
+Pac-Man at row 1, column 4
+    row  0: ###############
+    row  1: # G P..#......#
+    row  2: # ###..#..###.#
+    row  3: # ...G........#
+    row  4: # ##.#####.##.#
+--- REASONER
+Squares near you:
+row 0: 2:. 3:. 4:# 5:. 6:#
+row 1: 2:# 3:G 4:P 5:. 6:.
+row 2: 2:# 3:# 4:# 5:. 6:.
+row 3: 2:. 3:. 4:. 5:G 6:.
+left: step 1: (1:. 2:# 3:. 4:# 5:. 6:#)
+left: step 2: (1:. 2:. 3:. 4:. 5:. 6:.)
+left: step 3: (1:. 2:# 3:# 4:# 5:. 6:.)
+left: step 4: (1:. 2:. 3:. 4:# 5:. 6:#)
+right: step 1: (2:. 3:. 4:. 5:. 6:. 7:#)
+right: step 2: (2:# 3:# 4:. 5:# 6:. 7:#)
+right: step 3: (2:# 3:# 4:- 5:- 6:- 7:-)
+right: step 4: (2:# 3:# 4:# 5:- 6:# 7:-)
+--- TARGET
+Squares near you:
+row 0: 2:# 3:# 4:# 5:# 6:#
+row 1: 2:G 3:- 4:P 5:. 6:.
+row 2: 2:# 3:# 4:# 5:. 6:.
+row 3: 2:. 3:. 4:. 5:G 6:.
+left: step 1: (1, 3) empty; step 2: (1, 2) ghost; step 3: (1, 1) empty; step 4: (2, 1) empty; a ghost at step 2, no pellet within 4 steps => deadly, you run into a ghost and lose a life.
+right: step 1: (1, 5) pellet; step 2: (1, 6) pellet, (2, 5) pellet; step 3: (2, 6) pellet, (3, 5) ghost; step 4: (3, 4) pellet, (3, 6) pellet; a ghost at step 3, a pellet at step 1 => risky, a ghost is close this way; eats a pellet right away.
+--- COMPARISON
+copy: DIFFERS
+    row 0: header differs: target 'row 0: 2:# 3:# 4:# 5:# 6:#', reasoner 'row 0: 2:. 3:. 4:# 5:. 6:#'
+    row 0: col 2: target #, reasoner .; col 3: target #, reasoner .; col 5: target #, reasoner .
+    row 1: header differs: target 'row 1: 2:G 3:- 4:P 5:. 6:.', reasoner 'row 1: 2:# 3:G 4:P 5:. 6:.'
+    row 1: col 2: target G, reasoner #; col 3: target -, reasoner G
+  left: working DIFFERS; outcome DIFFERS; lose-a-life verdict WRONG
+      target working:   step 1: (1, 3) empty; step 2: (1, 2) ghost; step 3: (1, 1) empty; step 4: (2, 1) empty; a ghost at step 2, no pellet within 4 steps
+      reasoner working: step 1: (1:. 2:# 3:. 4:# 5:. 6:#)
+      step 1 squares differ: target ['1, 3'], reasoner []
+      step count differs: target 4, reasoner 1
+      target outcome:   deadly, you run into a ghost and lose a life.
+      reasoner outcome: step 1: (1:. 2:# 3:. 4:# 5:. 6:#)
+  right: working DIFFERS; outcome DIFFERS; lose-a-life verdict right
+      target working:   step 1: (1, 5) pellet; step 2: (1, 6) pellet, (2, 5) pellet; step 3: (2, 6) pellet, (3, 5) ghost; step 4: (3, 4) pellet, (3, 6) pellet; a ghost at step 3, a pellet at step 1
+      reasoner working: step 1: (2:. 3:. 4:. 5:. 6:. 7:#)
+      step 1 squares differ: target ['1, 5'], reasoner []
+      step count differs: target 4, reasoner 1
+      target outcome:   risky, a ghost is close this way; eats a pellet right away.
+      reasoner outcome: step 1: (2:. 3:. 4:. 5:. 6:. 7:#)
+--- JEFF'S OPTIONS (2 of 2 moves have an outcome)
+    left: Move one square left: step 1: (1:. 2:# 3:. 4:# 5:. 6:#)
+    right: Move one square right: step 1: (2:. 3:. 4:. 5:. 6:. 7:#)
+    (from the target: left: Move one square left: deadly, you run into a ghost and lose a life. | right: Move one square right: risky, a ghost is close this way; eats a pellet right away.)
+====================================================================================================
+ROW 90 (frogger), 56.3s
+turn 5; frog at row 4, column 4
+    row 5 (river, moving right every 2 turns): L~~~~LLLL
+    row 4 (safe ground): ____F____
+    row 3 (road, moving left every 2 turns): ....CC.CC
+--- REASONER
+Rows you can reach:
+turn 5 is odd, so rows that move every 2 turns move at the end of this turn
+row 5 (river, moving right every 2 turns, so it moves at the end of this turn): 0:L 1:~ 2:~ 3:~ 4:~ 5:~ 6:L 7:L 8:L
+row 4 (grass)
+row 3 (road, moving left every 2 turns, so it moves at the end of this turn): 0:. 1:. 2:. 3:. 4:C 5:C 6:. 7:C 8:C
+up: row 5, column 4 is open water => you would fall in the water and lose a life.
+down: row 3, column 4; row 3 moves left, so column 4 gets what is now in column 5: C => you would be hit by a car and lose a life.
+left: row 4 is grass => safe, but no progress.
+right: row 4 is grass => safe, but no progress.
+stay: row 4 is grass => safe, but no progress.
+--- TARGET
+Rows you can reach:
+turn 5 is odd, so rows that move every 2 turns move at the end of this turn
+row 5 (river, moving right every 2 turns, so it moves at the end of this turn): 0:L 1:~ 2:~ 3:~ 4:~ 5:L 6:L 7:L 8:L
+row 4 (grass)
+row 3 (road, moving left every 2 turns, so it moves at the end of this turn): 0:. 1:. 2:. 3:. 4:C 5:C 6:. 7:C 8:C
+up: row 5, column 4 is open water => you would fall in the water and lose a life.
+down: row 3, column 4; row 3 moves left, so column 4 gets what is now in column 5: C => you would be hit by a car and lose a life.
+left: row 4 is grass => safe, but no progress.
+right: row 4 is grass => safe, but no progress.
+stay: row 4 is grass => safe, but no progress.
+--- COMPARISON
+turn line: match
+copy: DIFFERS
+    row 5: col 5: target L, reasoner ~
+  up: working match; outcome match; lose-a-life verdict right
+      check: reads row 5 col 4 as ~; own copy has ~; board has ~
+  down: working match; outcome match; lose-a-life verdict right
+      check: reads row 3 col 5 as C; own copy has C; board has C
+  left: working match; outcome match; lose-a-life verdict right
+  right: working match; outcome match; lose-a-life verdict right
+  stay: working match; outcome match; lose-a-life verdict right
+--- JEFF'S OPTIONS (5 of 5 moves have an outcome)
+    up: Move one square up, towards the goal: you would fall in the water and lose a life.
+    down: Move one square down, away from the goal: you would be hit by a car and lose a life.
+    left: Move one square left: safe, but no progress.
+    right: Move one square right: safe, but no progress.
+    stay: Stay on your square this turn: safe, but no progress.
+    (from the target: up: Move one square up, towards the goal: you would fall in the water and lose a life. | down: Move one square down, away from the goal: you would be hit by a car and lose a life. | left: Move one square left: safe, but no progress. | right: Move one square right: safe, but no progress. | stay: Stay on your square this turn: safe, but no progress.)
+====================================================================================================
+ROW 53 (pacman), 96.1s
+Pac-Man at row 11, column 11
+    row  8: # ###.....###.#
+    row  9: # ..#.###.#...#
+    row 10: # #.#.  .G#.#.#
+    row 11: #        G P  #
+    row 12: ###############
+--- REASONER
+Squares near you:
+row 9: 9:. 10:# 11:. 12:. 13:.
+row 10: 9:. 10:# 11:. 12:# 13:.
+row 11: 9:- 10:- 11:P 12:- 13:-
+row 12: 9:# 10:# 11:# 12:# 13:#
+left: step 1: (11, 10) empty; step 2: (11, 9) empty; step 3: (10, 9) pellet, (11, 8) empty; step 4: (9, 9) pellet, (10, 8) empty, (11, 7) empty; no ghost within 4 steps, a pellet at step 3 => safe, no ghost close this way; pellets a few steps along.
+right: step 1: (11, 12) empty; step 2: (11, 13) empty; step 3: (10, 13) pellet; step 4: (9, 13) pellet; no ghost within 4 steps, a pellet at step 3 => safe, no ghost close this way; pellets a few steps along.
+up: step 1: (10, 11) pellet; step 2: (9, 11) pellet; step 3: (9, 12) pellet; step 4: (9, 13) pellet; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+--- TARGET
+Squares near you:
+row 9: 9:. 10:# 11:. 12:. 13:.
+row 10: 9:G 10:# 11:. 12:# 13:.
+row 11: 9:G 10:- 11:P 12:- 13:-
+row 12: 9:# 10:# 11:# 12:# 13:#
+left: step 1: (11, 10) empty; step 2: (11, 9) ghost; step 3: (10, 9) ghost, (11, 8) empty; step 4: (9, 9) pellet, (10, 8) pellet, (11, 7) empty; a ghost at step 2, a pellet at step 4 => deadly, you run into a ghost and lose a life.
+right: step 1: (11, 12) empty; step 2: (11, 13) empty; step 3: (10, 13) pellet; step 4: (9, 13) pellet; no ghost within 4 steps, a pellet at step 3 => safe, no ghost close this way; pellets a few steps along.
+up: step 1: (10, 11) pellet; step 2: (9, 11) pellet; step 3: (9, 12) pellet; step 4: (9, 13) pellet; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+--- COMPARISON
+copy: DIFFERS
+    row 10: header differs: target 'row 10: 9:G 10:# 11:. 12:# 13:.', reasoner 'row 10: 9:. 10:# 11:. 12:# 13:.'
+    row 10: col 9: target G, reasoner .
+    row 11: header differs: target 'row 11: 9:G 10:- 11:P 12:- 13:-', reasoner 'row 11: 9:- 10:- 11:P 12:- 13:-'
+    row 11: col 9: target G, reasoner -
+  left: working DIFFERS; outcome DIFFERS; lose-a-life verdict WRONG
+      target working:   step 1: (11, 10) empty; step 2: (11, 9) ghost; step 3: (10, 9) ghost, (11, 8) empty; step 4: (9, 9) pellet, (10, 8) pellet, (11, 7) empty; a ghost at step 2, a pellet at step 4
+      reasoner working: step 1: (11, 10) empty; step 2: (11, 9) empty; step 3: (10, 9) pellet, (11, 8) empty; step 4: (9, 9) pellet, (10, 8) empty, (11, 7) empty; no ghost within 4 steps, a pellet at step 3
+      check: lists (11, 9) as empty; its own copy has empty; the maze has ghost
+      check: lists (10, 9) as pellet; its own copy has pellet; the maze has ghost
+      check: lists (10, 8) as empty; its own copy has outside the copy; the maze has pellet
+      target outcome:   deadly, you run into a ghost and lose a life.
+      reasoner outcome: safe, no ghost close this way; pellets a few steps along.
+  right: working match; outcome match; lose-a-life verdict right
+  up: working match; outcome match; lose-a-life verdict right
+--- JEFF'S OPTIONS (3 of 3 moves have an outcome)
+    left: Move one square left: safe, no ghost close this way; pellets a few steps along.
+    right: Move one square right: safe, no ghost close this way; pellets a few steps along.
+    up: Move one square up: safe, no ghost close this way; eats a pellet right away.
+    (from the target: left: Move one square left: deadly, you run into a ghost and lose a life. | right: Move one square right: safe, no ghost close this way; pellets a few steps along. | up: Move one square up: safe, no ghost close this way; eats a pellet right away.)
+====================================================================================================
+ROW 135 (frogger), 66.0s
+turn 6; frog at row 2, column 5
+    row 3 (road, moving right every 2 turns): ...CC.C..
+    row 2 (road, moving right every turn): ...CCFC..
+    row 1 (road, moving left every turn): C.....C..
+--- REASONER
+Rows you can reach:
+turn 6 is even, so rows that move every 2 turns do not move at the end of this turn
+row 3 (road, moving right every 2 turns, so it does not move this turn): 0:. 1:. 2:. 3:C 4:C 5:. 6:C 7:C 8:.
+row 2 (road, moving right every turn, so it moves at the end of this turn): 0:C 1:. 2:. 3:. 4:. 5:. 6:C 7:C 8:.
+row 1 (road, moving left every turn, so it moves at the end of this turn): 0:C 1:. 2:. 3:. 4:. 5:. 6:C 7:. 8:.
+up: row 3, column 5; row 3 does not move, so column 5 keeps what is there now: C => you would be hit by a car and lose a life.
+down: row 1, column 5; row 1 moves left, so column 5 gets what is now in column 6: C => you would be hit by a car and lose a life.
+left: row 2, column 4; row 2 moves right, so column 4 gets what is now in column 3: C => you would be hit by a car and lose a life.
+right: row 2, column 6; row 2 moves right, so column 6 gets what is now in column 5: . => safe, but no progress.
+stay: your square; row 2 moves right, so column 5 gets what is now in column 4: C => you would be hit by a car and lose a life.
+--- TARGET
+Rows you can reach:
+turn 6 is even, so rows that move every 2 turns do not move at the end of this turn
+row 3 (road, moving right every 2 turns, so it does not move this turn): 0:. 1:. 2:. 3:C 4:C 5:. 6:C 7:. 8:.
+row 2 (road, moving right every turn, so it moves at the end of this turn): 0:. 1:. 2:. 3:C 4:C 5:F 6:C 7:. 8:.
+row 1 (road, moving left every turn, so it moves at the end of this turn): 0:C 1:. 2:. 3:. 4:. 5:. 6:C 7:. 8:.
+up: row 3, column 5; row 3 does not move, so column 5 keeps what is there now: . => safe, and one row closer to the goal.
+down: row 1, column 5; row 1 moves left, so column 5 gets what is now in column 6: C => you would be hit by a car and lose a life.
+left: row 2, column 4; row 2 moves right, so column 4 gets what is now in column 3: C => you would be hit by a car and lose a life.
+right: row 2, column 6; row 2 moves right, so column 6 gets what is now in column 5: . (your square, no car) => safe, but no progress.
+stay: your square; row 2 moves right, so column 5 gets what is now in column 4: C => you would be hit by a car and lose a life.
+--- COMPARISON
+turn line: match
+copy: DIFFERS
+    row 3: col 7: target ., reasoner C
+    row 2: col 0: target ., reasoner C; col 3: target C, reasoner .; col 4: target C, reasoner .; col 5: target F, reasoner .; col 7: target ., reasoner C
+  up: working DIFFERS; outcome DIFFERS; lose-a-life verdict WRONG
+      target working:   row 3, column 5; row 3 does not move, so column 5 keeps what is there now: .
+      reasoner working: row 3, column 5; row 3 does not move, so column 5 keeps what is there now: C
+      check: reads row 3 col 5 as C; own copy has .; board has .  <-- misread vs board  <-- differs from own copy
+      target outcome:   safe, and one row closer to the goal.
+      reasoner outcome: you would be hit by a car and lose a life.
+  down: working match; outcome match; lose-a-life verdict right
+      check: reads row 1 col 6 as C; own copy has C; board has C
+  left: working match; outcome match; lose-a-life verdict right
+      check: reads row 2 col 3 as C; own copy has .; board has C  <-- differs from own copy
+  right: working DIFFERS; outcome match; lose-a-life verdict right
+      target working:   row 2, column 6; row 2 moves right, so column 6 gets what is now in column 5: . (your square, no car)
+      reasoner working: row 2, column 6; row 2 moves right, so column 6 gets what is now in column 5: .
+      check: reads row 2 col 5 as .; own copy has .; board has F
+  stay: working match; outcome match; lose-a-life verdict right
+      check: reads row 2 col 4 as C; own copy has .; board has C  <-- differs from own copy
+--- JEFF'S OPTIONS (5 of 5 moves have an outcome)
+    up: Move one square up, towards the goal: you would be hit by a car and lose a life.
+    down: Move one square down, away from the goal: you would be hit by a car and lose a life.
+    left: Move one square left: you would be hit by a car and lose a life.
+    right: Move one square right: safe, but no progress.
+    stay: Stay on your square this turn: you would be hit by a car and lose a life.
+    (from the target: up: Move one square up, towards the goal: safe, and one row closer to the goal. | down: Move one square down, away from the goal: you would be hit by a car and lose a life. | left: Move one square left: you would be hit by a car and lose a life. | right: Move one square right: safe, but no progress. | stay: Stay on your square this turn: you would be hit by a car and lose a life.)
+====================================================================================================
+ROW 116 (pacman), 78.1s
+Pac-Man at row 10, column 6
+    row  7: #     .#......#
+    row  8: # ### ....###.#
+    row  9: #   #G###.#...#
+    row 10: # #.# P...#.#.#
+    row 11: #       ......#
+    row 12: ###############
+--- REASONER
+Squares near you:
+row 8: 4:# 5:. 6:. 7:. 8:.
+row 9: 4:# 5:. 6:# 7:# 8:#
+row 10: 4:# 5:. 6:P 7:. 8:.
+row 11: 4:- 5:- 6:- 7:- 8:.
+row 12: 4:# 5:# 6:# 7:# 8:#
+down: step 1: (11, 6) empty; step 2: (11, 5) empty, (11, 7) empty; step 3: (10, 5) pellet, (10, 7) pellet, (11, 4) empty, (11, 8) pellet; step 4: (9, 5) pellet, (10, 8) pellet, (11, 3) empty, (11, 9) pellet; no ghost within 4 steps, a pellet at step 3 => safe, no ghost close this way; pellets a few steps along.
+left: step 1: (10, 5) pellet; step 2: (9, 5) pellet, (11, 5) empty; step 3: (8, 5) pellet, (11, 4) empty, (11, 6) empty; step 4: (7, 5) pellet, (8, 6) pellet, (11, 3) empty, (11, 7) empty; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+right: step 1: (10, 7) pellet; step 2: (10, 8) pellet, (11, 7) empty; step 3: (10, 9) pellet, (11, 6) empty, (11, 8) pellet; step 4: (9, 9) pellet, (11, 5) empty, (11, 9) pellet; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+--- TARGET
+Squares near you:
+row 8: 4:# 5:- 6:. 7:. 8:.
+row 9: 4:# 5:G 6:# 7:# 8:#
+row 10: 4:# 5:- 6:P 7:. 8:.
+row 11: 4:- 5:- 6:- 7:- 8:.
+row 12: 4:# 5:# 6:# 7:# 8:#
+down: step 1: (11, 6) empty; step 2: (11, 5) empty, (11, 7) empty; step 3: (10, 5) empty, (10, 7) pellet, (11, 4) empty, (11, 8) pellet; step 4: (9, 5) ghost, (10, 8) pellet, (11, 3) empty, (11, 9) pellet; a ghost at step 4, a pellet at step 3 => risky, a ghost is close this way; pellets a few steps along.
+left: step 1: (10, 5) empty; step 2: (9, 5) ghost, (11, 5) empty; step 3: (8, 5) empty, (11, 4) empty, (11, 6) empty; step 4: (7, 5) empty, (8, 6) pellet, (11, 3) empty, (11, 7) empty; a ghost at step 2, a pellet at step 4 => deadly, you run into a ghost and lose a life.
+right: step 1: (10, 7) pellet; step 2: (10, 8) pellet, (11, 7) empty; step 3: (10, 9) pellet, (11, 6) empty, (11, 8) pellet; step 4: (9, 9) pellet, (11, 5) empty, (11, 9) pellet; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+--- COMPARISON
+copy: DIFFERS
+    row 8: header differs: target 'row 8: 4:# 5:- 6:. 7:. 8:.', reasoner 'row 8: 4:# 5:. 6:. 7:. 8:.'
+    row 8: col 5: target -, reasoner .
+    row 9: header differs: target 'row 9: 4:# 5:G 6:# 7:# 8:#', reasoner 'row 9: 4:# 5:. 6:# 7:# 8:#'
+    row 9: col 5: target G, reasoner .
+    row 10: header differs: target 'row 10: 4:# 5:- 6:P 7:. 8:.', reasoner 'row 10: 4:# 5:. 6:P 7:. 8:.'
+    row 10: col 5: target -, reasoner .
+  down: working DIFFERS; outcome DIFFERS; lose-a-life verdict right
+      target working:   step 1: (11, 6) empty; step 2: (11, 5) empty, (11, 7) empty; step 3: (10, 5) empty, (10, 7) pellet, (11, 4) empty, (11, 8) pellet; step 4: (9, 5) ghost, (10, 8) pellet, (11, 3) empty, (11, 9) pellet; a ghost at step 4, a pellet at step 3
+      reasoner working: step 1: (11, 6) empty; step 2: (11, 5) empty, (11, 7) empty; step 3: (10, 5) pellet, (10, 7) pellet, (11, 4) empty, (11, 8) pellet; step 4: (9, 5) pellet, (10, 8) pellet, (11, 3) empty, (11, 9) pellet; no ghost within 4 steps, a pellet at step 3
+      check: lists (10, 5) as pellet; its own copy has pellet; the maze has empty
+      check: lists (9, 5) as pellet; its own copy has pellet; the maze has ghost
+      target outcome:   risky, a ghost is close this way; pellets a few steps along.
+      reasoner outcome: safe, no ghost close this way; pellets a few steps along.
+  left: working DIFFERS; outcome DIFFERS; lose-a-life verdict WRONG
+      target working:   step 1: (10, 5) empty; step 2: (9, 5) ghost, (11, 5) empty; step 3: (8, 5) empty, (11, 4) empty, (11, 6) empty; step 4: (7, 5) empty, (8, 6) pellet, (11, 3) empty, (11, 7) empty; a ghost at step 2, a pellet at step 4
+      reasoner working: step 1: (10, 5) pellet; step 2: (9, 5) pellet, (11, 5) empty; step 3: (8, 5) pellet, (11, 4) empty, (11, 6) empty; step 4: (7, 5) pellet, (8, 6) pellet, (11, 3) empty, (11, 7) empty; no ghost within 4 steps, a pellet at step 1
+      check: lists (10, 5) as pellet; its own copy has pellet; the maze has empty
+      check: lists (9, 5) as pellet; its own copy has pellet; the maze has ghost
+      check: lists (8, 5) as pellet; its own copy has pellet; the maze has empty
+      check: lists (7, 5) as pellet; its own copy has outside the copy; the maze has empty
+      target outcome:   deadly, you run into a ghost and lose a life.
+      reasoner outcome: safe, no ghost close this way; eats a pellet right away.
+  right: working match; outcome match; lose-a-life verdict right
+--- JEFF'S OPTIONS (3 of 3 moves have an outcome)
+    down: Move one square down: safe, no ghost close this way; pellets a few steps along.
+    left: Move one square left: safe, no ghost close this way; eats a pellet right away.
+    right: Move one square right: safe, no ghost close this way; eats a pellet right away.
+    (from the target: down: Move one square down: risky, a ghost is close this way; pellets a few steps along. | left: Move one square left: deadly, you run into a ghost and lose a life. | right: Move one square right: safe, no ghost close this way; eats a pellet right away.)
+====================================================================================================
+ROW 4 (pacman), 57.4s
+Pac-Man at row 7, column 11
+    row  4: #.##.#####.##.#
+    row  5: #....#...#....#
+    row  6: ####.#.#.#.####
+    row  7: #......#...PG #
+    row  8: #.###.....### #
+    row  9: #...#.###.#G  #
+    row 10: #.#.#.....# # #
+--- REASONER
+Squares near you:
+row 5: 9:# 10:. 11:. 12:. 13:.
+row 6: 9:# 10:. 11:# 12:# 13:#
+row 7: 9:. 10:. 11:P 12:G 13:-
+row 8: 9:. 10:# 11:# 12:# 13:-
+row 9: 9:. 10:# 11:G 12:- 13:-
+left: step 1: (7, 10) pellet; step 2: (6, 10) pellet, (7, 9) pellet; step 3: (5, 10) pellet, (7, 8) pellet, (8, 9) pellet; step 4: (4, 10) pellet, (5, 11) pellet, (6, 8) pellet, (8, 8) pellet, (9, 9) pellet; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+right: step 1: (7, 12) empty; step 2: (7, 13) empty; step 3: (8, 13) empty; step 4: (9, 13) empty; no ghost within 4 steps, no pellet within 4 steps => safe, no ghost close this way; pellets further away.
+--- TARGET
+Squares near you:
+row 5: 9:# 10:. 11:. 12:. 13:.
+row 6: 9:# 10:. 11:# 12:# 13:#
+row 7: 9:. 10:. 11:P 12:G 13:-
+row 8: 9:. 10:# 11:# 12:# 13:-
+row 9: 9:. 10:# 11:G 12:- 13:-
+left: step 1: (7, 10) pellet; step 2: (6, 10) pellet, (7, 9) pellet; step 3: (5, 10) pellet, (7, 8) pellet, (8, 9) pellet; step 4: (4, 10) pellet, (5, 11) pellet, (6, 8) pellet, (8, 8) pellet, (9, 9) pellet; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+right: step 1: (7, 12) ghost; step 2: (7, 13) empty; step 3: (8, 13) empty; step 4: (9, 13) empty; a ghost at step 1, no pellet within 4 steps => deadly, you run into a ghost and lose a life.
+--- COMPARISON
+copy: match
+  left: working match; outcome match; lose-a-life verdict right
+  right: working DIFFERS; outcome DIFFERS; lose-a-life verdict WRONG
+      target working:   step 1: (7, 12) ghost; step 2: (7, 13) empty; step 3: (8, 13) empty; step 4: (9, 13) empty; a ghost at step 1, no pellet within 4 steps
+      reasoner working: step 1: (7, 12) empty; step 2: (7, 13) empty; step 3: (8, 13) empty; step 4: (9, 13) empty; no ghost within 4 steps, no pellet within 4 steps
+      check: lists (7, 12) as empty; its own copy has ghost; the maze has ghost
+      target outcome:   deadly, you run into a ghost and lose a life.
+      reasoner outcome: safe, no ghost close this way; pellets further away.
+--- JEFF'S OPTIONS (2 of 2 moves have an outcome)
+    left: Move one square left: safe, no ghost close this way; eats a pellet right away.
+    right: Move one square right: safe, no ghost close this way; pellets further away.
+    (from the target: left: Move one square left: safe, no ghost close this way; eats a pellet right away. | right: Move one square right: deadly, you run into a ghost and lose a life.)
+====================================================================================================
+ROW 43 (frogger), 67.0s
+turn 59; frog at row 2, column 4
+    row 3 (road, moving right every 2 turns): ..CC.C...
+    row 2 (road, moving right every turn): ..CCFC...
+    row 1 (road, moving left every turn): .C.....C.
+--- REASONER
+Rows you can reach:
+turn 59 is odd, so rows that move every 2 turns move at the end of this turn
+row 3 (road, moving right every 2 turns, so it moves at the end of this turn): 0:. 1:. 2:C 3:C 4:. 5:C 6:. 7:. 8:.
+row 2 (road, moving right every turn, so it moves at the end of this turn): 0:. 1:. 2:C 3:C 4:F 5:C 6:. 7:. 8:.
+row 1 (road, moving left every turn, so it moves at the end of this turn): 0:. 1:C 2:. 3:. 4:. 5:. 6:. 7:C 8:.
+up: row 3, column 4; row 3 moves right, so column 4 gets what is now in column 3: C => you would be hit by a car and lose a life.
+down: row 1, column 4; row 1 moves left, so column 4 gets what is now in column 5: . => safe, but one row further from the goal.
+left: row 2, column 3; row 2 moves right, so column 3 gets what is now in column 2: . => safe, but no progress.
+right: row 2, column 5; row 2 moves right, so column 5 gets what is now in column 4: . (your square, no car) => safe, but no progress.
+stay: your square; row 2 moves right, so column 4 gets what is now in column 3: C => you would be hit by a car and lose a life.
+--- TARGET
+Rows you can reach:
+turn 59 is odd, so rows that move every 2 turns move at the end of this turn
+row 3 (road, moving right every 2 turns, so it moves at the end of this turn): 0:. 1:. 2:C 3:C 4:. 5:C 6:. 7:. 8:.
+row 2 (road, moving right every turn, so it moves at the end of this turn): 0:. 1:. 2:C 3:C 4:F 5:C 6:. 7:. 8:.
+row 1 (road, moving left every turn, so it moves at the end of this turn): 0:. 1:C 2:. 3:. 4:. 5:. 6:. 7:C 8:.
+up: row 3, column 4; row 3 moves right, so column 4 gets what is now in column 3: C => you would be hit by a car and lose a life.
+down: row 1, column 4; row 1 moves left, so column 4 gets what is now in column 5: . => safe, but one row further from the goal.
+left: row 2, column 3; row 2 moves right, so column 3 gets what is now in column 2: C => you would be hit by a car and lose a life.
+right: row 2, column 5; row 2 moves right, so column 5 gets what is now in column 4: . (your square, no car) => safe, but no progress.
+stay: your square; row 2 moves right, so column 4 gets what is now in column 3: C => you would be hit by a car and lose a life.
+--- COMPARISON
+turn line: match
+copy: match
+  up: working match; outcome match; lose-a-life verdict right
+      check: reads row 3 col 3 as C; own copy has C; board has C
+  down: working match; outcome match; lose-a-life verdict right
+      check: reads row 1 col 5 as .; own copy has .; board has .
+  left: working DIFFERS; outcome DIFFERS; lose-a-life verdict WRONG
+      target working:   row 2, column 3; row 2 moves right, so column 3 gets what is now in column 2: C
+      reasoner working: row 2, column 3; row 2 moves right, so column 3 gets what is now in column 2: .
+      check: reads row 2 col 2 as .; own copy has C; board has C  <-- misread vs board  <-- differs from own copy
+      target outcome:   you would be hit by a car and lose a life.
+      reasoner outcome: safe, but no progress.
+  right: working match; outcome match; lose-a-life verdict right
+      check: reads row 2 col 4 as .; own copy has F; board has F
+  stay: working match; outcome match; lose-a-life verdict right
+      check: reads row 2 col 3 as C; own copy has C; board has C
+--- JEFF'S OPTIONS (5 of 5 moves have an outcome)
+    up: Move one square up, towards the goal: you would be hit by a car and lose a life.
+    down: Move one square down, away from the goal: safe, but one row further from the goal.
+    left: Move one square left: safe, but no progress.
+    right: Move one square right: safe, but no progress.
+    stay: Stay on your square this turn: you would be hit by a car and lose a life.
+    (from the target: up: Move one square up, towards the goal: you would be hit by a car and lose a life. | down: Move one square down, away from the goal: safe, but one row further from the goal. | left: Move one square left: you would be hit by a car and lose a life. | right: Move one square right: safe, but no progress. | stay: Stay on your square this turn: you would be hit by a car and lose a life.)
+====================================================================================================
+ROW 65 (pacman), 62.2s
+Pac-Man at row 9, column 1
+    row  6: ####.#.#.#.####
+    row  7: #......#......#
+    row  8: #.###.....###.#
+    row  9: #P G#.###.#...#
+    row 10: # #.#.....#.#.#
+    row 11: #     G ......#
+    row 12: ###############
+--- REASONER
+Squares near you:
+row 7: 0:# 1:. 2:. 3:.
+row 8: 0:# 1:. 2:# 3:#
+row 9: 0:# 1:P 2:- 3:G
+row 10: 0:# 1:- 2:# 3:.
+row 11: 0:# 1:- 2:- 3:-
+down: step 1: (10, 1) empty; step 2: (11, 1) empty; step 3: (11, 2) empty; step 4: (11, 3) empty; no ghost within 4 steps, no pellet within 4 steps => safe, no ghost close this way; pellets further away.
+right: step 1: (9, 2) empty; step 2: (9, 3) ghost; step 3: (10, 3) pellet; step 4: (11, 3) empty; a ghost at step 2, a pellet at step 3 => deadly, you run into a ghost and lose a life.
+up: step 1: (8, 1) pellet; step 2: (7, 1) pellet; step 3: (7, 2) pellet; step 4: (7, 3) pellet; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+--- TARGET
+Squares near you:
+row 7: 0:# 1:. 2:. 3:.
+row 8: 0:# 1:. 2:# 3:#
+row 9: 0:# 1:P 2:- 3:G
+row 10: 0:# 1:- 2:# 3:.
+row 11: 0:# 1:- 2:- 3:-
+down: step 1: (10, 1) empty; step 2: (11, 1) empty; step 3: (11, 2) empty; step 4: (11, 3) empty; no ghost within 4 steps, no pellet within 4 steps => safe, no ghost close this way; pellets further away.
+right: step 1: (9, 2) empty; step 2: (9, 3) ghost; step 3: (10, 3) pellet; step 4: (11, 3) empty; a ghost at step 2, a pellet at step 3 => deadly, you run into a ghost and lose a life.
+up: step 1: (8, 1) pellet; step 2: (7, 1) pellet; step 3: (7, 2) pellet; step 4: (7, 3) pellet; no ghost within 4 steps, a pellet at step 1 => safe, no ghost close this way; eats a pellet right away.
+--- COMPARISON
+copy: match
+  down: working match; outcome match; lose-a-life verdict right
+  right: working match; outcome match; lose-a-life verdict right
+  up: working match; outcome match; lose-a-life verdict right
+--- JEFF'S OPTIONS (3 of 3 moves have an outcome)
+    down: Move one square down: safe, no ghost close this way; pellets further away.
+    right: Move one square right: deadly, you run into a ghost and lose a life.
+    up: Move one square up: safe, no ghost close this way; eats a pellet right away.
+    (from the target: down: Move one square down: safe, no ghost close this way; pellets further away. | right: Move one square right: deadly, you run into a ghost and lose a life. | up: Move one square up: safe, no ghost close this way; eats a pellet right away.)
+====================================================================================================
+ROW 154 (frogger), 53.6s
+turn 15; frog at row 5, column 1
+    row 6 (river, moving left every turn): L~~~~LLLL
+    row 5 (river, moving left every 2 turns): LF~~~~LLL
+    row 4 (safe ground): _________
+--- REASONER
+Rows you can reach:
+turn 15 is odd, so rows that move every 2 turns move at the end of this turn
+row 6 (river, moving left every turn, so it moves at the end of this turn): 0:L 1:~ 2:~ 3:~ 4:~ 5:~ 6:~ 7:L 8:L
+row 5 (river, moving left every 2 turns, so it moves at the end of this turn): 0:L 1:F 2:~ 3:~ 4:~ 5:~ 6:~ 7:L 8:L
+row 4 (grass)
+up: row 6, column 1 is open water => you would fall in the water and lose a life.
+down: row 4 is grass => safe, but one row further from the goal.
+left: row 5, column 0 is a log; the log moves left to column -1, past the edge of the board => you would fall in the water and lose a life.
+right: row 5, column 2 is open water => you would fall in the water and lose a life.
+stay: your square is a log; the log moves left to column 0 => safe, but no progress.
+--- TARGET
+Rows you can reach:
+turn 15 is odd, so rows that move every 2 turns move at the end of this turn
+row 6 (river, moving left every turn, so it moves at the end of this turn): 0:L 1:~ 2:~ 3:~ 4:~ 5:L 6:L 7:L 8:L
+row 5 (river, moving left every 2 turns, so it moves at the end of this turn): 0:L 1:F 2:~ 3:~ 4:~ 5:~ 6:L 7:L 8:L
+row 4 (grass)
+up: row 6, column 1 is open water => you would fall in the water and lose a life.
+down: row 4 is grass => safe, but one row further from the goal.
+left: row 5, column 0 is a log; the log moves left to column -1, past the edge of the board => you would fall in the water and lose a life.
+right: row 5, column 2 is open water => you would fall in the water and lose a life.
+stay: your square is a log; the log moves left to column 0 => safe, but no progress.
+--- COMPARISON
+turn line: match
+copy: DIFFERS
+    row 6: col 5: target L, reasoner ~; col 6: target L, reasoner ~
+    row 5: col 6: target L, reasoner ~
+  up: working match; outcome match; lose-a-life verdict right
+      check: reads row 6 col 1 as ~; own copy has ~; board has ~
+  down: working match; outcome match; lose-a-life verdict right
+  left: working match; outcome match; lose-a-life verdict right
+      check: reads row 5 col 0 as L; own copy has L; board has L
+  right: working match; outcome match; lose-a-life verdict right
+      check: reads row 5 col 2 as ~; own copy has ~; board has ~
+  stay: working match; outcome match; lose-a-life verdict right
+      check: reads row 5 col 1 as L; own copy has F; board has F
+--- JEFF'S OPTIONS (5 of 5 moves have an outcome)
+    up: Move one square up, towards the goal: you would fall in the water and lose a life.
+    down: Move one square down, away from the goal: safe, but one row further from the goal.
+    left: Move one square left: you would fall in the water and lose a life.
+    right: Move one square right: you would fall in the water and lose a life.
+    stay: Stay on your square this turn: safe, but no progress.
+    (from the target: up: Move one square up, towards the goal: you would fall in the water and lose a life. | down: Move one square down, away from the goal: safe, but one row further from the goal. | left: Move one square left: you would fall in the water and lose a life. | right: Move one square right: you would fall in the water and lose a life. | stay: Stay on your square this turn: safe, but no progress.)
+====================================================================================================
+frogger {'turn right': 10, 'states': 10, 'copy exact': 5, 'moves': 47, 'working exact': 41, 'outcome exact': 42, 'verdict right': 42, 'all outcomes exact': 7}
+pacman {'states': 10, 'copy exact': 3, 'moves': 26, 'working exact': 13, 'outcome exact': 15, 'verdict right': 18, 'all outcomes exact': 3}
+total {'turn right': 10, 'states': 20, 'copy exact': 8, 'moves': 73, 'working exact': 54, 'outcome exact': 57, 'verdict right': 60, 'all outcomes exact': 10}
+total seconds 1225.2

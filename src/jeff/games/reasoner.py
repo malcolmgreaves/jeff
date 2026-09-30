@@ -109,16 +109,18 @@ def target(game: str, state: dict, question: dict) -> str:
 # Board mode: the reasoner sees only the board (`board_only`) and works each outcome out, writing its working first.
 BOARD_TASK = {
     "frogger": ("Work out what each move leads to from the board alone. Each road or river row says which way it moves "
-                "and whether it moves at the end of this turn. When a row moves, everything in it shifts one square that "
-                "way, and what leaves one edge comes back on the other. The frog moves first; then the rows move. On a "
+                "and how often: every turn, or every 2 turns. A row that moves every 2 turns moves at the end of "
+                "odd-numbered turns; the state gives the current turn. When a row moves, everything in it shifts one square "
+                "that way, and what leaves one edge comes back on the other. The frog moves first; then the rows move. On a "
                 "road row, the frog is hit if a car is on its square after the cars move. On a river row, the frog must "
                 "land on a log; the log then carries it, and a log that carries it past the edge of the board drowns it. "
                 "F marks the frog's own square: on a road row there is no car under it, and on a river row it is on a "
                 "log."),
-    "pacman": ("Work out what each move leads to from the maze alone. P marks Pac-Man and G a ghost. A move takes Pac-Man "
-               "to the next square that way; then each ghost moves one square towards him. So a ghost on that square, or "
-               "on a square next to it, catches him this turn. Also say how many steps along the corridors the nearest "
-               "ghost and the nearest pellet are that way."),
+    "pacman": ("Work out what each move leads to from the maze alone. P marks Pac-Man, G a ghost and . a pellet. A move "
+               "takes Pac-Man to the next square that way, step 1; count further steps along the corridors from there, "
+               "never back through Pac-Man's square. After Pac-Man moves, each ghost moves one square towards him, so a "
+               "ghost 1 or 2 steps away that way catches him this turn, and a ghost 3 or 4 steps away is close. For each "
+               "move, list the squares 1, 2, 3 and 4 steps away that way and what is on each."),
 }
 BOARD_FORMAT = {
     "frogger": "First copy the rows the frog can reach, numbering each square by its column.",
@@ -127,15 +129,16 @@ BOARD_FORMAT = {
 }
 BOARD_START = {"frogger": "Rows you can reach:\n", "pacman": "Squares near you:\n"}
 BOARD_MAX_TOKENS = 640
-SQUARE_NAMES = {"#": "a wall", ".": "a pellet", " ": "empty", "G": "a ghost"}
+STEPS = 4  # steps listed for each Pac-Man move: every outcome category depends only on what is within 4 steps
+CONTENTS = {".": "pellet", " ": "empty", "G": "ghost"}
 
 
 def board_only(game: frogger.Frogger | pacman.PacMan, state: dict) -> dict:
-    """The judgement wording's state without its facts for each direction, so only the board is left. Frogger's rows
-    also say whether they move at the end of this turn: the board does not show that for a row that moves every 2 turns,
-    and without it the outcome cannot be worked out."""
+    """The judgement wording's state without its facts for each direction, so only the board is left. Frogger's state
+    also gives the turn count: the board shows how often each row moves but not when, and a row that moves every 2
+    turns moves at the end of odd-numbered turns."""
     if isinstance(game, frogger.Frogger):
-        return {"board_top_to_bottom": game.board(timing=True), "legend": state["legend"], "you": state["you"]}
+        return {"board_top_to_bottom": game.board(), "legend": state["legend"], "you": state["you"], "turn": game.turn}
     return {key: value for key, value in state.items() if key not in ("directions", "note")}
 
 
@@ -182,32 +185,42 @@ def frogger_step(game: frogger.Frogger, move: str) -> str:
 
 
 def pacman_step(game: pacman.PacMan, picture: list[str], move: str) -> str:
-    """How the outcome of one Pac-Man move follows from the maze, then the outcome. Checked against `game.leaving`."""
+    """How the outcome of one Pac-Man move follows from the maze: the squares 1 to STEPS steps away that way (along the
+    corridors, not back through Pac-Man's square) and what is on each, then the outcome. The nearest ghost is checked
+    against `game.leaving`. The outcome is the game's own, which counts a pellet under a ghost that the maze hides."""
     first = pacman.neighbours(game.pac)[move]
-    around = [(way, (first[0] + dr, first[1] + dc)) for way, (dr, dc) in pacman.MOVES.items()
-              if (first[0] + dr, first[1] + dc) != game.pac]
-    name = lambda square: f"({square[0]}, {square[1]}) {SQUARE_NAMES[picture[square[0]][square[1]]]}"  # noqa: E731
-    near = any(picture[r][c] == "G" for r, c in [first] + [square for _, square in around])
+    reach = pacman.distances(first, blocked=game.pac)
+    layers = [sorted(square for square, distance in reach.items() if distance == step - 1) for step in range(1, STEPS + 1)]
+    seen = "; ".join(f"step {step}: " + ", ".join(f"({r}, {c}) {CONTENTS[picture[r][c]]}" for r, c in squares)
+                     for step, squares in enumerate(layers, 1) if squares)
+    ghost_step, pellet_step = (next((step for step, squares in enumerate(layers, 1) if any(picture[r][c] == mark for r, c in squares)),
+                                    None) for mark in ("G", "."))
     steps = game.leaving(move)
     ghost, pellet = steps["steps_to_nearest_ghost"], steps["steps_to_nearest_pellet"]
-    if near != (ghost is not None and ghost <= 2):
-        raise AssertionError(f"Pac-Man working says ghost near={near}, the game says {ghost} steps for {move}")
-    distances = ((f"the nearest ghost that way is {steps_away(ghost)}" if ghost is not None else "no ghost can be reached that way")
-                 + (f", the nearest pellet {steps_away(pellet)}" if pellet is not None else ", no pellets that way"))
-    return (f"the next square is {name(first)}; next to it: {', '.join(f'{way} {name(square)}' for way, square in around)}; "
-            f"{'a ghost is within 2 steps' if near else 'no ghost within 2 steps'}; {distances} => {pacman.outcome(pellet, ghost)}")
+    if ghost_step != (ghost if ghost is not None and ghost <= STEPS else None):
+        raise AssertionError(f"Pac-Man working finds a ghost at step {ghost_step}, the game says {ghost} for {move}")
+    summary = ((f"a ghost at step {ghost_step}" if ghost_step else f"no ghost within {STEPS} steps") + ", "
+               + (f"a pellet at step {pellet_step}" if pellet_step else f"no pellet within {STEPS} steps"))
+    return f"{seen}; {summary} => {pacman.outcome(pellet, ghost)}"
 
 
 def board_target(game: frogger.Frogger | pacman.PacMan, question: dict) -> str:
     """The lines a correct board-mode reasoner writes: the nearby squares, then the working and outcome for each move."""
     if isinstance(game, frogger.Frogger):
-        lines = [BOARD_START["frogger"].rstrip("\n")]
+        odd = game.turn % 2 == 1
+        lines = [BOARD_START["frogger"].rstrip("\n"),
+                 f"turn {game.turn} is {'odd' if odd else 'even'}, so rows that move every 2 turns "
+                 f"{'move' if odd else 'do not move'} at the end of this turn"]
         board = {int(line.split()[1]): line.rsplit(": ", 1)[1] for line in game.board()}
         for row in (game.row + 1, game.row, game.row - 1):
             if row in game.lanes:
-                timing = (f"moves {'right' if game.lanes[row].direction == 1 else 'left'} at the end of this turn"
-                          if game.moves_now(row) else "does not move this turn")
-                lines.append(f"row {row} ({game.kind(row)}, {timing}): " + " ".join(f"{i}:{s}" for i, s in enumerate(board[row])))
+                lane = game.lanes[row]
+                if game.moves_now(row) != (lane.period == 1 or odd):
+                    raise AssertionError(f"Row {row}'s timing differs from the turn rule")
+                how = f"moving {'right' if lane.direction == 1 else 'left'} every {'turn' if lane.period == 1 else '2 turns'}"
+                when = "moves at the end of this turn" if game.moves_now(row) else "does not move this turn"
+                lines.append(f"row {row} ({game.kind(row)}, {how}, so it {when}): "
+                             + " ".join(f"{i}:{s}" for i, s in enumerate(board[row])))
             elif 0 <= row <= frogger.GOAL:
                 lines.append(f"row {row} ({'the goal row' if row == frogger.GOAL else 'grass'})")
         return "\n".join(lines + [f"{move}: {frogger_step(game, move)}" for move in question["criteria"]])

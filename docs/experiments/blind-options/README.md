@@ -25,6 +25,10 @@ every outcome checked and every label taken from the game. The converged reasone
 choices. Retraining Jeff doesn't change safety, but it changes which safe move Jeff picks. For the details, see
 [Jeff trained on the reasoner's outcomes](#jeff-trained-on-the-reasoners-outcomes).
 
+A fifth experiment removes the last derived fact from the board-only reasoner's input and trains it until validation
+loss stops improving. Its working is reliable in Frogger, but in Pac-Man it rarely sees the ghosts. For the details,
+see [Board-only reasoner, trained to convergence](#board-only-reasoner-trained-to-convergence).
+
 ## Method
 
 `scripts/blind_options.py` drives each game with the rule bot, with 25% of its moves random so that risky states occur.
@@ -213,8 +217,9 @@ a lookup. This experiment removes those facts: the reasoner sees only the board 
 
 - **Input:** `jeff.games.reasoner.board_only` keeps the `judgement` state's board, legend, and the player's position,
   and drops the facts for each direction. The Frogger board as drawn says that a row moves "every 2 turns" but not
-  whether it moves this turn, so the outcome can't be worked out from it. Each road and river row therefore also says
-  whether it moves at the end of this turn (`Frogger.board(timing=True)`). A player watching the game sees that timing.
+  whether it moves this turn, so the outcome can't be worked out from it. Each road and river row therefore also said
+  whether it moves at the end of this turn (the code at commit `6451a22`). The
+  [converged run](#board-only-reasoner-trained-to-convergence) replaces that derived fact with the turn number.
 - **Output:** the reasoner first copies the squares it needs, numbered by column. In Frogger that's the rows the frog
   can reach, and in Pac-Man the squares within two rows and two columns of Pac-Man. Then it writes one line for each
   move: the square the move leads to, the rule that applies, then "=>" and the outcome in the `outcomes` wording's
@@ -370,6 +375,73 @@ The retrained Jeff on the earlier wordings, against the original Jeff (safe choi
   became safer in Frogger with no gain in fact sensitivity, so Jeff changed its fixed habit rather than reading the
   facts. `rule` became less safe in Frogger.
 
+## Board-only reasoner, trained to convergence
+
+The first board-only reasoner trained for a fixed 1,500 steps, and its input still gave it one derived fact. This
+version removes that fact and trains until validation loss stops improving.
+
+### Changes from the first board-only run
+
+- **No derived facts in the input.** Frogger's state gives the turn number, not whether each row moves this turn. The
+  prompt states the game's rule, that a row that moves every 2 turns moves at the end of odd-numbered turns, and the
+  reasoner's working applies it: "turn 25 is odd, so rows that move every 2 turns move at the end of this turn." The
+  Pac-Man state was already the board alone.
+- **Pac-Man working that shows each step.** The first run's working stated the distances to the nearest ghost and
+  pellet without showing how to find them. Every Pac-Man outcome category depends only on what lies within 4 steps: a
+  ghost within 2 (deadly), a ghost at 3 or 4 (risky), a pellet on the next square, or a pellet within 4. So the working
+  now lists the squares 1, 2, 3, and 4 steps away along the corridors, with what is on each, and the outcome follows
+  from that list.
+- **Checked targets.** As before, the game code writes every target and checks it against the game's answer: the
+  timing rule for every copied row, and the step of the nearest ghost within 4 steps.
+- **More data.** 8,000 training rows (4,000 states from each game) and 400 validation rows (200 from each game),
+  from the same seeds as before.
+
+### Training procedure
+
+`scripts/reasoner_lora.py` resumed from the first board-only adapter:
+
+- It trains LoRA with rank 8 on the top 4 of 24 layers, in batches of 2 rows with a 1,300-token limit, with loss on
+  the answer tokens only. Adam starts at learning rate 1e-4.
+- Every 200 steps, it scores all 400 validation rows and keeps the adapter with the lowest loss.
+- After two scores in a row without a lower loss, it halves the learning rate and goes back to the kept adapter
+  (`--patience 2 --reduce-on-plateau 2`). After the second halving, the next such plateau stops the run.
+
+The run took 5,000 steps, about 7.9 hours. It halved the learning rate to 5e-5 at step 3,200 and to 2.5e-5 at step
+3,600, each time going back to the step-2,800 adapter. It stopped at step 5,000 and kept step 4,600, with validation
+loss 0.0128. The lowest rate mattered: after the second halving, validation loss fell from 0.0170 to 0.0128.
+
+![Validation and training loss by training step, with the learning-rate phases](board-reasoner-training.png)
+
+Validation loss starts at 0.67 because the first adapter hadn't seen the new answer format. The spike in training loss
+after each halving comes from the restart with a new optimizer, and it settles within about 150 steps.
+`board-reasoner-training.log` holds every logged loss, and `board-reasoner-adapter-config.json` records the run's
+settings and the kept step.
+
+### Held-out examples
+
+A separate run on the CPU generated answers with the kept adapter for 20 contested validation states, 10 in each game,
+and compared them with the targets. `board-reasoner-examples.txt` shows each state, the reasoner's answer, the target,
+and the options Jeff gets. `board-reasoner-examples.jsonl` holds the raw answers.
+
+| | Frogger (10 states, 47 moves) | Pac-Man (10 states, 26 moves) |
+|---|---|---|
+| Outcome exactly right | 42 (89%) | 15 (58%) |
+| Lose-a-life verdict right | 42 (89%) | 18 (69%) |
+| Deadly moves called deadly | 23 of 24 | 3 of 11 |
+| States with every outcome right | 7 | 3 |
+
+- **Frogger: the procedure is learned, but single cell reads slip.** The turn step was right in all 10 states. In all
+  47 moves, the working named the right square, source column, row timing, and log movement. All 5 wrong outcomes came
+  from reading one cell's value wrong, and 4 of them called a safe move deadly. In row 43, for example, the reasoner
+  copied the rows exactly, but for `left` it read column 2 as `.` where the board has `C`, and it called a deadly move
+  safe. Its copies of the nearby rows often have stray errors, mostly in cells that no move reads.
+- **Pac-Man: the reasoner doesn't see the ghosts.** It lists the right squares at each step (24 of 26 moves), but it
+  labels ghosts as empty squares or pellets. It wrote `G` for 8 of the 17 ghost squares in its copies, and labeled 4 of
+  the 20 ghost squares in its working. It sometimes drops a ghost that its own copy shows: in row 4 it copied the `G`
+  next to Pac-Man, then listed that square as empty and called a deadly move safe. It never called a safe move deadly.
+- **The effect on Jeff.** In 3 of the 10 Pac-Man states, every option Jeff gets says "safe" although a move is deadly.
+  In one state, with Pac-Man next to the top wall, the answer lost its format and gave no outcomes.
+
 ## Limits
 
 - **Coverage:** the experiment tests one phrasing for each wording, only the 0.8B model, and one state distribution.
@@ -385,8 +457,11 @@ The retrained Jeff on the earlier wordings, against the original Jeff (safe choi
   fixed procedure written by the game code.
 - **Frogger's `board` row:** the Jeff-alone `board` wording shows the board as drawn, without the lane timing. For rows
   that move every 2 turns, the outcome can't be worked out from that state.
-- **Board-only training length:** validation loss was still falling slowly at step 1,500, and the kept adapter wasn't
-  the one with the lowest validation loss.
+- **The first board-only run:** it trained for a fixed 1,500 steps and kept the step-1,500 adapter, not the one with
+  the lowest validation loss. Its input also said whether each Frogger row moves this turn.
+- **The converged board-only reasoner:** in Pac-Man it rarely recognizes the ghosts. Its examples cover 20 contested
+  states. The prompt states the rule for rows that move every 2 turns. When a ghost stands on a pellet, the maze shows
+  only the ghost, but the target's outcome counts the pellet.
 - **Jeff's fine-tune:** it trains LoRA on the top 4 layers, not all weights as `jeff.train` does, and only on game
   data. Development loss was still falling after its one epoch. The experiment doesn't measure whether the fine-tune
   changed Jeff on the benchmark panel. Its labels, the rule bot's moves, decide which of several safe moves counts as
@@ -449,7 +524,8 @@ The retrained Jeff on the earlier wordings, against the original Jeff (safe choi
      --conditions reasoned --reasoner checkpoints/base-0.8b --adapter checkpoints/reasoner-lora
    ```
 
-1. For the board-only reasoner, build its data, train it, and run it against the Jeff server:
+1. For the first board-only reasoner, check out commit `6451a22` (later commits changed its input and targets), build
+   its data, train it, and run it against the Jeff server:
 
    ```bash
    uv run python scripts/reasoner_data.py --out data/reasoner-board --input board
@@ -457,6 +533,17 @@ The retrained Jeff on the earlier wordings, against the original Jeff (safe choi
      --iters 1500 --max-tokens 1200
    uv run python scripts/blind_options.py http://127.0.0.1:8765 --out runs/blind/reasoned-board.json --states 400 \
      --conditions reasoned-board --reasoner checkpoints/base-0.8b --adapter checkpoints/reasoner-board-lora
+   ```
+
+1. For the converged board-only reasoner, return to this commit. Build the new data, resume from the first board-only
+   adapter until convergence, and draw the curve:
+
+   ```bash
+   uv run python scripts/reasoner_data.py --out data/reasoner-board-v2 --input board --train 4000 --valid 200
+   uv run python scripts/reasoner_lora.py --data data/reasoner-board-v2 --out checkpoints/reasoner-board-converged \
+     --resume checkpoints/reasoner-board-lora --iters 6000 --eval-every 200 --valid-batches -1 --patience 2 \
+     --reduce-on-plateau 2 --max-tokens 1300 > runs/blind/reasoner-board-converged-train.log
+   uv run python scripts/plot_training.py runs/blind/reasoner-board-converged-train.log board-reasoner-training.png
    ```
 
 1. For Jeff trained on the reasoner's outcomes, train the reasoner to convergence, build Jeff's data, and fine-tune

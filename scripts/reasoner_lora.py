@@ -5,7 +5,8 @@ Python loop over the tokens in place of its Metal kernel, and mlx-lm's trainer c
 unrolls that loop, forward and backward, into one very large graph. This driver runs the steps uncompiled and adapts
 only the top `--layers` layers (jeff.mlx_tuning). Every `--eval-every` steps it scores the validation set and keeps the
 adapter with the lowest validation loss; with `--patience` it stops once that many validations pass without a lower
-loss. `--resume` starts from an earlier adapter's weights. The adapter directory loads with
+loss. With `--reduce-on-plateau N`, running out of patience first halves the learning rate and goes back to the best
+adapter, up to N times, before the run stops. `--resume` starts from an earlier adapter's weights. The adapter directory loads with
 `mlx_lm.load(model, adapter_path=...)`.
 
 Usage: python scripts/reasoner_lora.py --data data/reasoner --out checkpoints/reasoner-lora [--iters 1000]"""
@@ -47,6 +48,8 @@ def main() -> None:
     parser.add_argument("--valid-batches", type=int, default=25, help="-1 scores the whole validation set")
     parser.add_argument("--patience", type=int, help="Stop after this many validations without a lower validation loss")
     parser.add_argument("--resume", type=Path, help="Start from this adapter directory's weights, with a fresh optimizer")
+    parser.add_argument("--reduce-on-plateau", type=int, default=0,
+                        help="Times to halve the learning rate and go back to the best adapter when patience runs out")
     args = parser.parse_args()
     if args.out.exists():
         raise FileExistsError(f"Refusing to overwrite {args.out}")
@@ -60,7 +63,8 @@ def main() -> None:
     config = {"model": args.model, "fine_tune_type": "lora", "num_layers": args.layers, "lora_parameters": LORA,
               "iters": args.iters, "batch_size": args.batch_size, "learning_rate": args.learning_rate,
               "data": str(args.data), "mask_prompt": True, "max_tokens": args.max_tokens,
-              "resume": str(args.resume) if args.resume else None, "patience": args.patience}
+              "resume": str(args.resume) if args.resume else None, "patience": args.patience,
+              "reduce_on_plateau": args.reduce_on_plateau}
     save_config(config, args.out / "adapter_config.json")
     grad_checkpoint(model.layers[0])
     optimizer = optim.Adam(learning_rate=args.learning_rate)
@@ -75,7 +79,7 @@ def main() -> None:
     def save() -> None:
         mx.save_safetensors(str(args.out / "adapters.safetensors"), dict(tree_flatten(model.trainable_parameters())))
 
-    best, best_iteration, stale = validate(0), 0, 0
+    best, best_iteration, stale, learning_rate, reductions = validate(0), 0, 0, args.learning_rate, 0
     save()
     model.train()
     losses, tokens, started = [], 0, time.perf_counter()
@@ -99,9 +103,17 @@ def main() -> None:
             else:
                 stale += 1
             if args.patience is not None and stale >= args.patience:
+                if reductions < args.reduce_on_plateau:
+                    reductions, stale, learning_rate = reductions + 1, 0, learning_rate / 2
+                    model.load_weights(str(args.out / "adapters.safetensors"), strict=False)
+                    optimizer = optim.Adam(learning_rate=learning_rate)
+                    print(f"Iter {iteration}: learning rate halved to {learning_rate:g}; back to the adapter from iteration "
+                          f"{best_iteration}", flush=True)
+                    continue
                 print(f"Stopped: {stale} validations without a lower loss", flush=True)
                 break
-    save_config({**config, "iterations_run": iteration, "best_iteration": best_iteration, "best_valid_loss": best},
+    save_config({**config, "iterations_run": iteration, "best_iteration": best_iteration, "best_valid_loss": best,
+                 "learning_rate_reductions": reductions},
                 args.out / "adapter_config.json")
     print(f"Saved final adapters to {args.out} (iteration {best_iteration}, validation loss {best:.4f})", flush=True)
 

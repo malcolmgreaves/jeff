@@ -1,0 +1,230 @@
+Iter 0: Val loss 0.6686
+Iter 25: Train loss 0.2387, 116 tokens/s, 5.66 s/iter
+Iter 50: Train loss 0.1517, 133 tokens/s, 5.13 s/iter
+Iter 75: Train loss 0.1149, 137 tokens/s, 4.98 s/iter
+Iter 100: Train loss 0.1091, 145 tokens/s, 4.74 s/iter
+Iter 125: Train loss 0.1046, 148 tokens/s, 4.65 s/iter
+Iter 150: Train loss 0.0647, 134 tokens/s, 5.13 s/iter
+Iter 175: Train loss 0.0715, 138 tokens/s, 5.04 s/iter
+Iter 200: Train loss 0.0586, 138 tokens/s, 5.01 s/iter
+Iter 200: Val loss 0.0679
+Iter 225: Train loss 0.0655, 123 tokens/s, 5.61 s/iter
+Iter 250: Train loss 0.0569, 124 tokens/s, 5.59 s/iter
+Iter 275: Train loss 0.0543, 117 tokens/s, 5.92 s/iter
+Iter 300: Train loss 0.0489, 99 tokens/s, 7.00 s/iter
+Iter 325: Train loss 0.0456, 100 tokens/s, 6.90 s/iter
+Iter 350: Train loss 0.0402, 101 tokens/s, 6.87 s/iter
+Iter 375: Train loss 0.0395, 98 tokens/s, 6.99 s/iter
+Iter 400: Train loss 0.0442, 97 tokens/s, 7.11 s/iter
+Iter 400: Val loss 0.0461
+Iter 425: Train loss 0.0449, 93 tokens/s, 7.40 s/iter
+Iter 450: Train loss 0.0411, 94 tokens/s, 7.40 s/iter
+Iter 475: Train loss 0.0357, 95 tokens/s, 7.26 s/iter
+Iter 500: Train loss 0.0503, 97 tokens/s, 7.11 s/iter
+Iter 525: Train loss 0.0362, 99 tokens/s, 6.98 s/iter
+Iter 550: Train loss 0.0318, 100 tokens/s, 6.87 s/iter
+Iter 575: Train loss 0.0411, 101 tokens/s, 6.78 s/iter
+Iter 600: Train loss 0.0394, 103 tokens/s, 6.68 s/iter
+Iter 600: Val loss 0.0316
+Iter 625: Train loss 0.0299, 101 tokens/s, 6.80 s/iter
+Iter 650: Train loss 0.0333, 103 tokens/s, 6.71 s/iter
+Iter 675: Train loss 0.0315, 104 tokens/s, 6.62 s/iter
+Iter 700: Train loss 0.0347, 105 tokens/s, 6.57 s/iter
+Iter 725: Train loss 0.0273, 106 tokens/s, 6.52 s/iter
+Iter 750: Train loss 0.0319, 107 tokens/s, 6.46 s/iter
+Iter 775: Train loss 0.0271, 107 tokens/s, 6.39 s/iter
+Iter 800: Train loss 0.0318, 109 tokens/s, 6.32 s/iter
+Iter 800: Val loss 0.0281
+Iter 825: Train loss 0.0262, 107 tokens/s, 6.41 s/iter
+Iter 850: Train loss 0.0246, 108 tokens/s, 6.35 s/iter
+Iter 875: Train loss 0.0248, 110 tokens/s, 6.28 s/iter
+Iter 900: Train loss 0.0294, 111 tokens/s, 6.22 s/iter
+Iter 925: Train loss 0.0277, 111 tokens/s, 6.16 s/iter
+Iter 950: Train loss 0.0335, 113 tokens/s, 6.11 s/iter
+Iter 975: Train loss 0.0211, 113 tokens/s, 6.06 s/iter
+Iter 1000: Train loss 0.0245, 114 tokens/s, 6.01 s/iter
+Iter 1000: Val loss 0.0253
+Iter 1025: Train loss 0.0292, 113 tokens/s, 6.09 s/iter
+Iter 1050: Train loss 0.0291, 114 tokens/s, 6.04 s/iter
+Iter 1075: Train loss 0.0257, 115 tokens/s, 6.00 s/iter
+Iter 1100: Train loss 0.0244, 115 tokens/s, 5.96 s/iter
+Iter 1125: Train loss 0.0263, 116 tokens/s, 5.92 s/iter
+Iter 1150: Train loss 0.0226, 117 tokens/s, 5.88 s/iter
+Iter 1175: Train loss 0.0289, 117 tokens/s, 5.87 s/iter
+Iter 1200: Train loss 0.0258, 118 tokens/s, 5.84 s/iter
+Iter 1200: Val loss 0.0284
+Iter 1225: Train loss 0.0261, 116 tokens/s, 5.92 s/iter
+Iter 1250: Train loss 0.0287, 117 tokens/s, 5.89 s/iter
+Iter 1275: Train loss 0.0260, 117 tokens/s, 5.86 s/iter
+Iter 1300: Train loss 0.0174, 117 tokens/s, 5.84 s/iter
+Iter 1325: Train loss 0.0313, 118 tokens/s, 5.82 s/iter
+Iter 1350: Train loss 0.0252, 118 tokens/s, 5.79 s/iter
+Iter 1375: Train loss 0.0194, 119 tokens/s, 5.77 s/iter
+Iter 1400: Train loss 0.0222, 119 tokens/s, 5.75 s/iter
+Iter 1400: Val loss 0.0249
+Iter 1425: Train loss 0.0248, 118 tokens/s, 5.83 s/iter
+Iter 1450: Train loss 0.0209, 118 tokens/s, 5.80 s/iter
+Iter 1475: Train loss 0.0231, 119 tokens/s, 5.78 s/iter
+Iter 1500: Train loss 0.0167, 119 tokens/s, 5.76 s/iter
+Iter 1525: Train loss 0.0219, 119 tokens/s, 5.74 s/iter
+Iter 1550: Train loss 0.0235, 120 tokens/s, 5.72 s/iter
+Iter 1575: Train loss 0.0202, 119 tokens/s, 5.73 s/iter
+Iter 1600: Train loss 0.0203, 120 tokens/s, 5.72 s/iter
+Iter 1600: Val loss 0.0212
+Iter 1625: Train loss 0.0206, 118 tokens/s, 5.78 s/iter
+Iter 1650: Train loss 0.0201, 119 tokens/s, 5.76 s/iter
+Iter 1675: Train loss 0.0240, 119 tokens/s, 5.74 s/iter
+Iter 1700: Train loss 0.0225, 119 tokens/s, 5.73 s/iter
+Iter 1725: Train loss 0.0173, 120 tokens/s, 5.72 s/iter
+Iter 1750: Train loss 0.0184, 120 tokens/s, 5.70 s/iter
+Iter 1775: Train loss 0.0195, 120 tokens/s, 5.68 s/iter
+Iter 1800: Train loss 0.0258, 121 tokens/s, 5.66 s/iter
+Iter 1800: Val loss 0.0214
+Iter 1825: Train loss 0.0219, 120 tokens/s, 5.71 s/iter
+Iter 1850: Train loss 0.0189, 120 tokens/s, 5.70 s/iter
+Iter 1875: Train loss 0.0196, 120 tokens/s, 5.68 s/iter
+Iter 1900: Train loss 0.0213, 121 tokens/s, 5.67 s/iter
+Iter 1925: Train loss 0.0171, 121 tokens/s, 5.65 s/iter
+Iter 1950: Train loss 0.0213, 121 tokens/s, 5.63 s/iter
+Iter 1975: Train loss 0.0229, 122 tokens/s, 5.62 s/iter
+Iter 2000: Train loss 0.0239, 122 tokens/s, 5.61 s/iter
+Iter 2000: Val loss 0.0208
+Iter 2025: Train loss 0.0192, 121 tokens/s, 5.65 s/iter
+Iter 2050: Train loss 0.0202, 121 tokens/s, 5.63 s/iter
+Iter 2075: Train loss 0.0197, 121 tokens/s, 5.65 s/iter
+Iter 2100: Train loss 0.0213, 121 tokens/s, 5.64 s/iter
+Iter 2125: Train loss 0.0181, 121 tokens/s, 5.63 s/iter
+Iter 2150: Train loss 0.0181, 122 tokens/s, 5.62 s/iter
+Iter 2175: Train loss 0.0233, 122 tokens/s, 5.61 s/iter
+Iter 2200: Train loss 0.0189, 122 tokens/s, 5.59 s/iter
+Iter 2200: Val loss 0.0225
+Iter 2225: Train loss 0.0182, 121 tokens/s, 5.63 s/iter
+Iter 2250: Train loss 0.0181, 122 tokens/s, 5.61 s/iter
+Iter 2275: Train loss 0.0203, 122 tokens/s, 5.61 s/iter
+Iter 2300: Train loss 0.0191, 122 tokens/s, 5.62 s/iter
+Iter 2325: Train loss 0.0158, 122 tokens/s, 5.60 s/iter
+Iter 2350: Train loss 0.0195, 122 tokens/s, 5.59 s/iter
+Iter 2375: Train loss 0.0191, 123 tokens/s, 5.57 s/iter
+Iter 2400: Train loss 0.0176, 123 tokens/s, 5.56 s/iter
+Iter 2400: Val loss 0.0180
+Iter 2425: Train loss 0.0171, 122 tokens/s, 5.59 s/iter
+Iter 2450: Train loss 0.0200, 123 tokens/s, 5.57 s/iter
+Iter 2475: Train loss 0.0200, 123 tokens/s, 5.56 s/iter
+Iter 2500: Train loss 0.0198, 123 tokens/s, 5.54 s/iter
+Iter 2525: Train loss 0.0223, 124 tokens/s, 5.53 s/iter
+Iter 2550: Train loss 0.0218, 124 tokens/s, 5.52 s/iter
+Iter 2575: Train loss 0.0219, 124 tokens/s, 5.51 s/iter
+Iter 2600: Train loss 0.0206, 124 tokens/s, 5.49 s/iter
+Iter 2600: Val loss 0.0191
+Iter 2625: Train loss 0.0193, 124 tokens/s, 5.52 s/iter
+Iter 2650: Train loss 0.0209, 124 tokens/s, 5.53 s/iter
+Iter 2675: Train loss 0.0168, 124 tokens/s, 5.52 s/iter
+Iter 2700: Train loss 0.0217, 124 tokens/s, 5.50 s/iter
+Iter 2725: Train loss 0.0189, 124 tokens/s, 5.49 s/iter
+Iter 2750: Train loss 0.0184, 124 tokens/s, 5.49 s/iter
+Iter 2775: Train loss 0.0201, 125 tokens/s, 5.48 s/iter
+Iter 2800: Train loss 0.0170, 125 tokens/s, 5.47 s/iter
+Iter 2800: Val loss 0.0170
+Iter 2825: Train loss 0.0174, 124 tokens/s, 5.51 s/iter
+Iter 2850: Train loss 0.0215, 124 tokens/s, 5.51 s/iter
+Iter 2875: Train loss 0.0183, 124 tokens/s, 5.52 s/iter
+Iter 2900: Train loss 0.0184, 124 tokens/s, 5.52 s/iter
+Iter 2925: Train loss 0.0216, 123 tokens/s, 5.54 s/iter
+Iter 2950: Train loss 0.0169, 123 tokens/s, 5.55 s/iter
+Iter 2975: Train loss 0.0146, 123 tokens/s, 5.54 s/iter
+Iter 3000: Train loss 0.0162, 123 tokens/s, 5.54 s/iter
+Iter 3000: Val loss 0.0187
+Iter 3025: Train loss 0.0235, 122 tokens/s, 5.59 s/iter
+Iter 3050: Train loss 0.0198, 122 tokens/s, 5.59 s/iter
+Iter 3075: Train loss 0.0190, 122 tokens/s, 5.59 s/iter
+Iter 3100: Train loss 0.0194, 122 tokens/s, 5.58 s/iter
+Iter 3125: Train loss 0.0202, 122 tokens/s, 5.58 s/iter
+Iter 3150: Train loss 0.0190, 122 tokens/s, 5.57 s/iter
+Iter 3175: Train loss 0.0187, 123 tokens/s, 5.56 s/iter
+Iter 3200: Train loss 0.0209, 123 tokens/s, 5.56 s/iter
+Iter 3200: Val loss 0.0194
+Iter 3200: learning rate halved to 5e-05; back to the adapter from iteration 2800
+Iter 3225: Train loss 0.0382, 122 tokens/s, 5.58 s/iter
+Iter 3250: Train loss 0.0414, 122 tokens/s, 5.57 s/iter
+Iter 3275: Train loss 0.0338, 123 tokens/s, 5.57 s/iter
+Iter 3300: Train loss 0.0276, 123 tokens/s, 5.56 s/iter
+Iter 3325: Train loss 0.0258, 123 tokens/s, 5.55 s/iter
+Iter 3350: Train loss 0.0233, 123 tokens/s, 5.54 s/iter
+Iter 3375: Train loss 0.0231, 123 tokens/s, 5.54 s/iter
+Iter 3400: Train loss 0.0209, 123 tokens/s, 5.53 s/iter
+Iter 3400: Val loss 0.0198
+Iter 3425: Train loss 0.0154, 123 tokens/s, 5.56 s/iter
+Iter 3450: Train loss 0.0173, 123 tokens/s, 5.55 s/iter
+Iter 3475: Train loss 0.0175, 123 tokens/s, 5.55 s/iter
+Iter 3500: Train loss 0.0153, 123 tokens/s, 5.54 s/iter
+Iter 3525: Train loss 0.0183, 124 tokens/s, 5.53 s/iter
+Iter 3550: Train loss 0.0150, 124 tokens/s, 5.53 s/iter
+Iter 3575: Train loss 0.0157, 124 tokens/s, 5.53 s/iter
+Iter 3600: Train loss 0.0180, 124 tokens/s, 5.53 s/iter
+Iter 3600: Val loss 0.0192
+Iter 3600: learning rate halved to 2.5e-05; back to the adapter from iteration 2800
+Iter 3625: Train loss 0.0248, 123 tokens/s, 5.57 s/iter
+Iter 3650: Train loss 0.0230, 122 tokens/s, 5.60 s/iter
+Iter 3675: Train loss 0.0226, 122 tokens/s, 5.59 s/iter
+Iter 3700: Train loss 0.0182, 122 tokens/s, 5.59 s/iter
+Iter 3725: Train loss 0.0204, 122 tokens/s, 5.58 s/iter
+Iter 3750: Train loss 0.0151, 123 tokens/s, 5.57 s/iter
+Iter 3775: Train loss 0.0157, 123 tokens/s, 5.56 s/iter
+Iter 3800: Train loss 0.0169, 123 tokens/s, 5.56 s/iter
+Iter 3800: Val loss 0.0161
+Iter 3825: Train loss 0.0134, 123 tokens/s, 5.58 s/iter
+Iter 3850: Train loss 0.0145, 123 tokens/s, 5.57 s/iter
+Iter 3875: Train loss 0.0134, 123 tokens/s, 5.56 s/iter
+Iter 3900: Train loss 0.0213, 123 tokens/s, 5.55 s/iter
+Iter 3925: Train loss 0.0126, 123 tokens/s, 5.54 s/iter
+Iter 3950: Train loss 0.0116, 124 tokens/s, 5.53 s/iter
+Iter 3975: Train loss 0.0178, 124 tokens/s, 5.52 s/iter
+Iter 4000: Train loss 0.0151, 124 tokens/s, 5.52 s/iter
+Iter 4000: Val loss 0.0152
+Iter 4025: Train loss 0.0144, 123 tokens/s, 5.54 s/iter
+Iter 4050: Train loss 0.0139, 124 tokens/s, 5.53 s/iter
+Iter 4075: Train loss 0.0127, 124 tokens/s, 5.52 s/iter
+Iter 4100: Train loss 0.0134, 124 tokens/s, 5.51 s/iter
+Iter 4125: Train loss 0.0122, 124 tokens/s, 5.50 s/iter
+Iter 4150: Train loss 0.0100, 124 tokens/s, 5.49 s/iter
+Iter 4175: Train loss 0.0101, 125 tokens/s, 5.49 s/iter
+Iter 4200: Train loss 0.0113, 125 tokens/s, 5.49 s/iter
+Iter 4200: Val loss 0.0135
+Iter 4225: Train loss 0.0123, 124 tokens/s, 5.52 s/iter
+Iter 4250: Train loss 0.0142, 124 tokens/s, 5.52 s/iter
+Iter 4275: Train loss 0.0119, 124 tokens/s, 5.52 s/iter
+Iter 4300: Train loss 0.0141, 124 tokens/s, 5.52 s/iter
+Iter 4325: Train loss 0.0127, 124 tokens/s, 5.52 s/iter
+Iter 4350: Train loss 0.0116, 124 tokens/s, 5.51 s/iter
+Iter 4375: Train loss 0.0099, 124 tokens/s, 5.51 s/iter
+Iter 4400: Train loss 0.0124, 124 tokens/s, 5.51 s/iter
+Iter 4400: Val loss 0.0134
+Iter 4425: Train loss 0.0140, 124 tokens/s, 5.53 s/iter
+Iter 4450: Train loss 0.0115, 124 tokens/s, 5.54 s/iter
+Iter 4475: Train loss 0.0100, 123 tokens/s, 5.54 s/iter
+Iter 4500: Train loss 0.0177, 122 tokens/s, 5.59 s/iter
+Iter 4525: Train loss 0.0140, 123 tokens/s, 5.58 s/iter
+Iter 4550: Train loss 0.0125, 123 tokens/s, 5.57 s/iter
+Iter 4575: Train loss 0.0137, 123 tokens/s, 5.56 s/iter
+Iter 4600: Train loss 0.0107, 123 tokens/s, 5.56 s/iter
+Iter 4600: Val loss 0.0128
+Iter 4625: Train loss 0.0135, 123 tokens/s, 5.57 s/iter
+Iter 4650: Train loss 0.0115, 123 tokens/s, 5.57 s/iter
+Iter 4675: Train loss 0.0096, 123 tokens/s, 5.57 s/iter
+Iter 4700: Train loss 0.0127, 123 tokens/s, 5.57 s/iter
+Iter 4725: Train loss 0.0112, 123 tokens/s, 5.57 s/iter
+Iter 4750: Train loss 0.0103, 123 tokens/s, 5.56 s/iter
+Iter 4775: Train loss 0.0107, 123 tokens/s, 5.56 s/iter
+Iter 4800: Train loss 0.0113, 123 tokens/s, 5.55 s/iter
+Iter 4800: Val loss 0.0130
+Iter 4825: Train loss 0.0133, 123 tokens/s, 5.57 s/iter
+Iter 4850: Train loss 0.0105, 123 tokens/s, 5.57 s/iter
+Iter 4875: Train loss 0.0114, 123 tokens/s, 5.58 s/iter
+Iter 4900: Train loss 0.0142, 122 tokens/s, 5.60 s/iter
+Iter 4925: Train loss 0.0131, 122 tokens/s, 5.63 s/iter
+Iter 4950: Train loss 0.0102, 120 tokens/s, 5.68 s/iter
+Iter 4975: Train loss 0.0132, 120 tokens/s, 5.69 s/iter
+Iter 5000: Train loss 0.0133, 120 tokens/s, 5.69 s/iter
+Iter 5000: Val loss 0.0135
+Stopped: 2 validations without a lower loss
+Saved final adapters to checkpoints/reasoner-board-converged (iteration 4600, validation loss 0.0128)
