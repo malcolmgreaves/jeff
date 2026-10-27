@@ -2,8 +2,9 @@
 
 Game states come from the driver of scripts/blind_options.py (the rule bot with a share of random moves), on seeds no
 other run uses: train from 300,000 on, dev from 400,000 on, and calibration from 500,000 on. For each state the reasoner
-(jeff.games.reasoner, facts mode) writes what each move leads to, and code checks every outcome it wrote against the
-game's own (jeff.games.reasoner.target). A state is kept only when every outcome is right. After a wrong greedy answer
+(jeff.games.reasoner) writes what each move leads to, and code checks every outcome it wrote against the game's own
+(jeff.games.reasoner.target). With `--input board` the reasoner sees only the board (board mode), and the game's
+outcomes come from jeff.games.reasoner.board_target. A state is kept only when every outcome is right. After a wrong greedy answer
 the reasoner writes again with sampling, up to TRIES answers in all, and a state it never gets right is dropped. The
 label always comes from the game (the rule bot's move); nothing the reasoner writes changes it.
 
@@ -11,7 +12,7 @@ Each row is a jeff Example with the question the reasoned condition of scripts/b
 wording's short state, and a choice between the moves, each named and followed by the reasoner's outcome.
 
 Usage: python scripts/reasoned_jeff_data.py --reasoner MODEL_DIR --adapter ADAPTER_DIR --out data/reasoned-jeff
-       [--train 1000] [--dev 100] [--calibration 100]   (states per game)"""
+       [--input facts|board] [--train 1000] [--dev 100] [--calibration 100]   (states per game)"""
 
 import argparse
 import json
@@ -52,12 +53,16 @@ def rows(name: str, count: int, seed: int, model: reasoner.Reasoner, stats: Coun
                 break
             short, _ = observe(game, module, "outcomes")
             full, question = observe(game, module, "judgement")
-            keys, target = list(question["criteria"]), reasoner.target(name, full, question)
+            keys = list(question["criteria"])
+            if model.board:
+                seen, target = reasoner.board_only(game, full), reasoner.board_target(game, question)
+            else:
+                seen, target = full, reasoner.target(name, full, question)
             rule_state, rule_question = observe(game, module, "rule")
             label = module.rule_player(rule_state, rule_question)
             text: str | None = None
             for tries in range(1, TRIES + 1):
-                written = model.write(name, full, question, temperature=0.0 if tries == 1 else SAMPLE_TEMPERATURE,
+                written = model.write(name, seen, question, temperature=0.0 if tries == 1 else SAMPLE_TEMPERATURE,
                                       seed=None if tries == 1 else (seed + episode) * 1000 + turn * 10 + tries)
                 if correct(written, target, keys):
                     text = written
@@ -70,7 +75,8 @@ def rows(name: str, count: int, seed: int, model: reasoner.Reasoner, stats: Coun
                                "family": f"reasoned-{name}-{seed + episode}", "state": short,
                                "question": {**question, "criteria": options}, "label": label, "target": label,
                                "source": {"dataset": "reasoned-games", "game": name, "seed": seed + episode, "turn": turn,
-                                          "answers_written": tries, "reasoning": text}})
+                                          "answers_written": tries, "reasoner_input": "board" if model.board else "facts",
+                                          "reasoning": text}})
                 if len(result) % 100 == 0:
                     print(f"{name}: {len(result)} / {count} rows; {dict(stats)}", flush=True)
             game_move = label if driver.random() >= EPSILON else driver.choice(sorted(rule_question["criteria"]))
@@ -85,12 +91,13 @@ def main() -> None:
     parser.add_argument("--reasoner", required=True)
     parser.add_argument("--adapter", required=True)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--input", choices=("facts", "board"), default="facts", help="What the reasoner sees")
     parser.add_argument("--train", type=int, default=1000, help="States per game")
     parser.add_argument("--dev", type=int, default=100, help="States per game")
     parser.add_argument("--calibration", type=int, default=100, help="States per game")
     args = parser.parse_args()
-    model = reasoner.Reasoner(args.reasoner, args.adapter)
-    report: dict[str, object] = {"reasoner": args.reasoner, "adapter": args.adapter, "tries": TRIES,
+    model = reasoner.Reasoner(args.reasoner, args.adapter, board=args.input == "board")
+    report: dict[str, object] = {"reasoner": args.reasoner, "adapter": args.adapter, "input": args.input, "tries": TRIES,
                                  "sample_temperature": SAMPLE_TEMPERATURE, "seeds": SEEDS}
     for split, count in (("train", args.train), ("dev", args.dev), ("calibration", args.calibration)):
         stats: dict[str, dict[str, int]] = {}
